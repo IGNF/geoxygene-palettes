@@ -40,6 +40,11 @@ import fr.ign.simulatedannealing.visitor.CompositeVisitor;
 import fr.ign.simulatedannealing.visitor.OutputStreamVisitor;
 import fr.ign.simulatedannealing.visitor.Visitor;
 
+/**
+ * Color palettes extrapolation demo application
+ * @author Bertrand Duménieu
+ *
+ */
 public class Extrapalettor {
 
   RandomGenerator rndg = new MersenneTwister();
@@ -148,7 +153,7 @@ public class Extrapalettor {
           visitors);
 
       viz.init(p.getInteger("nbdump"), p.getInteger("nsave"));
-
+      
       SimulatedAnnealing.optimize(palettor.rndg, conf, sampler, sch, end, viz);
 
       Color[] palette = new Color[(int) p.get("nbColours")];
