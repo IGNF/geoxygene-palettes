@@ -15,6 +15,7 @@ import fr.ign.cogit.palettes.extrapalettor.constraints.ChromaProximityFuzzyBinar
 import fr.ign.cogit.palettes.extrapalettor.constraints.ColourSequenceConstraint;
 import fr.ign.cogit.palettes.extrapalettor.constraints.HueProximityFuzzyBinaryConstraint;
 import fr.ign.cogit.palettes.extrapalettor.constraints.LightnessDistanceFuzzyBinaryConstraint;
+import fr.ign.cogit.palettes.extrapalettor.gui.GUIPaletteVisitor;
 import fr.ign.cogit.palettes.extrapalettor.gui.PaletteViewer;
 import fr.ign.mpp.DirectSampler;
 import fr.ign.mpp.configuration.BirthDeathModification;
@@ -22,6 +23,8 @@ import fr.ign.mpp.configuration.GraphConfiguration;
 import fr.ign.mpp.configuration.GraphVertex;
 import fr.ign.mpp.kernel.KernelFactory;
 import fr.ign.mpp.kernel.UniformBirth;
+import fr.ign.parameters.Parameter;
+import fr.ign.parameters.ParameterComponent;
 import fr.ign.parameters.Parameters;
 import fr.ign.rjmcmc.acceptance.Acceptance;
 import fr.ign.rjmcmc.acceptance.MetropolisAcceptance;
@@ -45,11 +48,73 @@ import fr.ign.simulatedannealing.visitor.Visitor;
  * @author Bertrand Duménieu
  *
  */
-public class Extrapalettor {
+public class Extrapalettor implements Runnable {
 
-  RandomGenerator rndg = new MersenneTwister();
+  // Global random generator
+  private final RandomGenerator rndg;
 
-  public GraphConfiguration<ColourPointLCH> create_configuration(ColorSpace cs, double p_e0, int nbColours) {
+  // Default parameters
+  private static final Parameters DEF_PARAMS;
+
+  private final Parameters p;
+
+  /**
+   * All the default parameters
+   */
+  static {
+    DEF_PARAMS = new Parameters();
+    DEF_PARAMS.set("p_birthdeath", 0f);
+    DEF_PARAMS.set("e0", 0.);
+    DEF_PARAMS.set("temp", 420);
+    DEF_PARAMS.set("deccoef", 0.9999);
+    DEF_PARAMS.set("nbiter", 1000000);
+    DEF_PARAMS.set("nbdump", 100000);
+    DEF_PARAMS.set("nbsave", 0);
+    DEF_PARAMS.set("nbColours", 4);
+  }
+
+  private final List<Visitor<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>>> visitors;
+
+  private GraphConfiguration<ColourPointLCH> final_configuration;
+
+  public Extrapalettor() {
+    this.p = new Parameters();
+    for (ParameterComponent DEF_P : DEF_PARAMS.entry) {
+      if (DEF_P instanceof Parameter) {
+        String key = ((Parameter) DEF_P).getKey();
+        Object value = ((Parameter) DEF_P).getValue();
+        this.p.add(new Parameter(key, value));
+      }
+    }
+
+    rndg = new MersenneTwister();
+
+    this.visitors = new ArrayList<>();
+  }
+
+  @Override
+  public void run() {
+    GraphConfiguration<ColourPointLCH> conf = this.create_configuration((ColorSpace) p.get("colorspace"),
+        p.getDouble("e0"), p.getInteger("nbColours"));
+
+    DirectSampler<ColourPointLCH, GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> ds = this
+        .create_BirthDeathSampler(p, this.rndg);
+    Sampler<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> sampler = this.create_sampler(p,
+        this.rndg, ds);
+
+    Schedule<SimpleTemperature> sch = new GeometricSchedule<SimpleTemperature>(
+        new SimpleTemperature(p.getDouble("temp")), p.getDouble("deccoef"));
+
+    EndTest end = new StabilityEndTest<>(p.getInteger("nbiter"), 0.1);
+    CompositeVisitor<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> viz = new CompositeVisitor<>(
+        visitors);
+    viz.init(p.getInteger("nbdump"), p.getInteger("nsave"));
+
+    SimulatedAnnealing.optimize(this.rndg, conf, sampler, sch, end, viz);
+    this.final_configuration = conf;
+  }
+
+  private GraphConfiguration<ColourPointLCH> create_configuration(ColorSpace cs, double p_e0, int nbColours) {
     ColourPointLCH[] pts = new ColourPointLCH[nbColours];
     ColourPointLCHBuilder csb = new ColourPointLCHBuilder();
     for (int i = 0; i < nbColours; i++) {
@@ -61,7 +126,7 @@ public class Extrapalettor {
     ConstantEnergy<ColourPointLCH, ColourPointLCH> e0 = new ConstantEnergy<>(p_e0);
 
     BinaryFuzzyConstraintsEnergy e1 = new BinaryFuzzyConstraintsEnergy();
-    e1.addConstraint(new LightnessDistanceFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 1));
+    e1.addConstraint(new LightnessDistanceFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 50));
     e1.addConstraint(new ChromaProximityFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 1));
     e1.addConstraint(new HueProximityFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 1));
 
@@ -72,7 +137,7 @@ public class Extrapalettor {
     }
     e2.addConstraint(new ColourSequenceConstraint(seq));
 
-    GraphConfiguration<ColourPointLCH> gc = new GraphConfiguration<>(e0, e1);
+    GraphConfiguration<ColourPointLCH> gc = new GraphConfiguration<>(e0, e1, e2);
     for (ColourPointLCH p : pts) {
       gc.insert(p);
     }
@@ -80,7 +145,7 @@ public class Extrapalettor {
     return gc;
   }
 
-  public DirectSampler<ColourPointLCH, GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> create_BirthDeathSampler(
+  private DirectSampler<ColourPointLCH, GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> create_BirthDeathSampler(
       Parameters p, RandomGenerator rndg) {
     ColorSpace cs = new CIELchColorSpace(false);
     ColourPointLCH minValsColourPointLCH = new ColourPointLCH(0);
@@ -117,71 +182,57 @@ public class Extrapalettor {
     return sampler;
   }
 
-  public static void main(String[] argv) {
+  private void addVisitor(Visitor v) {
+    this.visitors.add(v);
+  }
+
+  private GraphConfiguration<ColourPointLCH> getFinalConfiguration() {
+    return this.final_configuration;
+  }
+
+  public static void main(String[] argv) throws InterruptedException {
+
+    Extrapalettor palettor = new Extrapalettor();
+
+    Visitor vConsole = new OutputStreamVisitor<>(System.out);
+    Visitor vGUI = new GUIPaletteVisitor();
+
+    palettor.addVisitor(vConsole);
+    palettor.addVisitor(vGUI);
+
+    Thread t = new Thread(palettor);
+    t.run();
+    t.join();
+
+    // GUI
     PaletteViewer pv = new PaletteViewer();
     pv.setSize(600, 500);
 
-    for (int N = 0; N < 1; N++) {
-      Parameters p = new Parameters();
-      p.set("p_birthdeath", 0f);
-      p.set("e0", 0.);
-      p.set("temp", 420);
-      p.set("deccoef", 0.9999);
-      p.set("nbiter", 1000000);
-      p.set("nbdump", 100000);
-      p.set("nbsave", 0);
-      p.set("nbColours", 2);
-
-      Extrapalettor palettor = new Extrapalettor();
-
-      GraphConfiguration<ColourPointLCH> conf = palettor.create_configuration((ColorSpace) p.get("colorspace"),
-          p.getDouble("e0"), p.getInteger("nbColours"));
-
-      DirectSampler<ColourPointLCH, GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> ds = palettor
-          .create_BirthDeathSampler(p, palettor.rndg);
-      Sampler<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> sampler = palettor
-          .create_sampler(p, palettor.rndg, ds);
-
-      Schedule<SimpleTemperature> sch = new GeometricSchedule<SimpleTemperature>(
-          new SimpleTemperature(p.getDouble("temp")), p.getDouble("deccoef"));
-
-      EndTest end = new StabilityEndTest<>(p.getInteger("nbiter"), 0.1);
-
-      List<Visitor<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>>> visitors = new ArrayList<>();
-      visitors.add(new OutputStreamVisitor<>(System.out));
-      CompositeVisitor<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> viz = new CompositeVisitor<>(
-          visitors);
-
-      viz.init(p.getInteger("nbdump"), p.getInteger("nsave"));
-      
-      SimulatedAnnealing.optimize(palettor.rndg, conf, sampler, sch, end, viz);
-
-      Color[] palette = new Color[(int) p.get("nbColours")];
-      int i = 0;
-      List<ColourPointLCH> listOfColours = new ArrayList<>();
-      for (GraphVertex<ColourPointLCH> v : conf.getGraph().vertexSet()) {
-        listOfColours.add(v.getValue());
-      }
-      listOfColours.sort(new Comparator<ColourPointLCH>() {
-        @Override
-        public int compare(ColourPointLCH o1, ColourPointLCH o2) {
-          return Integer.compare(o1.getId(), o2.getId());
-        }
-      });
-      for (ColourPointLCH v : listOfColours) {
-        System.out.println("LCH=" + Arrays.toString(v.getComponents()));
-        float[] rgb = v.getColorSpace().toRGB(v.getComponents());
-        // TODO Clamp the LCH colours in the sRGB Gamut in the optimization, not
-        // here.
-        float clampedR = rgb[0] < 0 ? 0f : rgb[0] > 1 ? 1f : rgb[0];
-        float clampedG = rgb[1] < 0 ? 0f : rgb[1] > 1 ? 1f : rgb[1];
-        float clampedB = rgb[2] < 0 ? 0f : rgb[2] > 1 ? 1f : rgb[2];
-        Color c = new Color(clampedR, clampedG, clampedB);
-        palette[i++] = c;
-      }
-
-      pv.addPalette(palette);
+    GraphConfiguration<ColourPointLCH> palette = palettor.getFinalConfiguration();
+    List<ColourPointLCH> listOfColours = new ArrayList<>();
+    for (GraphVertex<ColourPointLCH> pelement : palette.getGraph().vertexSet()) {
+      listOfColours.add(pelement.getValue());
     }
+    listOfColours.sort(new Comparator<ColourPointLCH>() {
+      @Override
+      public int compare(ColourPointLCH o1, ColourPointLCH o2) {
+        return Integer.compare(o1.getId(), o2.getId());
+      }
+    });
+    Color[] pArray = new Color[listOfColours.size()];
+    for (int i = 0; i < pArray.length; i++) {
+      ColourPointLCH c = listOfColours.get(i);
+      System.out.println("LCH=" + Arrays.toString(c.getComponents()));
+      float[] rgb = c.getColorSpace().toRGB(c.getComponents());
+      // TODO Clamp the LCH colours in the sRGB Gamut in the optimization, not
+      // here.
+      float clampedR = rgb[0] < 0 ? 0f : rgb[0] > 1 ? 1f : rgb[0];
+      float clampedG = rgb[1] < 0 ? 0f : rgb[1] > 1 ? 1f : rgb[1];
+      float clampedB = rgb[2] < 0 ? 0f : rgb[2] > 1 ? 1f : rgb[2];
+      Color awtColor = new Color(clampedR, clampedG, clampedB);
+      pArray[i] = awtColor;
+    }
+    pv.addPalette(pArray);
     pv.setVisible(true);
     return;
   }
