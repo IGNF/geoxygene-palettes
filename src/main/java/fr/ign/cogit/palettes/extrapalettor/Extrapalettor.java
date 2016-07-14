@@ -1,6 +1,9 @@
 package fr.ign.cogit.palettes.extrapalettor;
 
+import java.awt.Color;
 import java.awt.color.ColorSpace;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +11,8 @@ import javax.swing.JPanel;
 
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
+
+import fr.ign.cogit.geoxygene.semio.color.CIELabColorSpace;
 import fr.ign.cogit.geoxygene.semio.color.CIELchColorSpace;
 import fr.ign.cogit.palettes.extrapalettor.constraints.ChromaProximityFuzzyBinaryConstraint;
 import fr.ign.cogit.palettes.extrapalettor.constraints.ColourSequenceConstraint;
@@ -56,7 +61,9 @@ public class Extrapalettor implements Runnable {
 
 	private final Parameters p;
 
-	private final List<Visitor<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>>> visitors;
+	private final List<Visitor<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>>> visitors;
+
+	private GraphConfiguration<ColorPoint> final_configuration;
 
 	/**
 	 * All the default parameters
@@ -65,7 +72,7 @@ public class Extrapalettor implements Runnable {
 		DEF_PARAMS = new Parameters();
 		DEF_PARAMS.set("p_birthdeath", 0f);
 		DEF_PARAMS.set("e0", 0.);
-		DEF_PARAMS.set("temp", 420);
+		DEF_PARAMS.set("temp", 1000);
 		DEF_PARAMS.set("deccoef", 0.9999);
 		DEF_PARAMS.set("nbiter", 10000);
 		DEF_PARAMS.set("nbdump", 20000);
@@ -98,101 +105,108 @@ public class Extrapalettor implements Runnable {
 
 	@Override
 	public void run() {
-		GraphConfiguration<ColourPointLCH> conf = this.create_configuration((ColorSpace) p.get("colorspace"),
+		GraphConfiguration<ColorPoint> conf = this.create_configuration((ColorSpace) p.get("colorspace"),
 				p.getDouble("e0"), p.getInteger("nbColours"));
 
-		DirectSampler<ColourPointLCH, GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> ds = this
+		DirectSampler<ColorPoint, GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> ds = this
 				.create_BirthDeathSampler(p, this.rndg);
-		Sampler<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> sampler = this
-				.create_sampler(p, this.rndg, ds);
+		Sampler<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> sampler = this.create_sampler(p,
+				this.rndg, ds);
 
 		Schedule<SimpleTemperature> sch = new GeometricSchedule<SimpleTemperature>(
 				new SimpleTemperature(p.getDouble("temp")), p.getDouble("deccoef"));
 
 		EndTest end = new StabilityEndTest<>(p.getInteger("nbiter"), 0.1);
-		CompositeVisitor<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> viz = new CompositeVisitor<>(
+		CompositeVisitor<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> viz = new CompositeVisitor<>(
 				visitors);
 		viz.init(p.getInteger("nbdump"), p.getInteger("nsave"));
 
 		SimulatedAnnealing.optimize(this.rndg, conf, sampler, sch, end, viz);
+		this.final_configuration = conf;
 	}
 
-	private GraphConfiguration<ColourPointLCH> create_configuration(ColorSpace cs, double p_e0, int nbColours) {
-		ColourPointLCH[] pts = new ColourPointLCH[nbColours];
-		ColourPointLCHBuilder csb = new ColourPointLCHBuilder();
+	private GraphConfiguration<ColorPoint> create_configuration(ColorSpace cs, double p_e0, int nbColours) {
+		ColorPoint[] pts = new ColorPoint[nbColours];
+		ColorPointBuilder csb = new ColorPointBuilder();
 		for (int i = 0; i < nbColours; i++) {
-			ColourPointLCH cp = csb.build(
-					new double[] { rndg.nextFloat() * 100f, rndg.nextFloat() * 100f, rndg.nextFloat() * 360f, i });
+			ColorPoint cp = csb.build(
+					// new double[] { rndg.nextFloat() * 100f,
+					// rndg.nextFloat()*100f, rndg.nextFloat() * 360f, i });
+					new double[] { rndg.nextFloat() * 100f, 127f - rndg.nextFloat() * 256f,
+							127f - rndg.nextFloat() * 256f, i });
 			pts[i] = cp;
 		}
 
-		ConstantEnergy<ColourPointLCH, ColourPointLCH> e0 = new ConstantEnergy<>(p_e0);
+		ConstantEnergy<ColorPoint, ColorPoint> e0 = new ConstantEnergy<>(p_e0);
 
 		BinaryFuzzyConstraintsEnergy e1 = new BinaryFuzzyConstraintsEnergy();
 		e1.addConstraint(new LightnessDistanceFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 50));
 		e1.addConstraint(new ChromaProximityFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 1));
-		e1.addConstraint(new HueProximityFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 20));
+		e1.addConstraint(new HueProximityFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 1));
 
 		NaryEnergy e2 = new NaryEnergy();
-		List<ColourPointLCH> seq = new ArrayList<>();
+		List<ColorPoint> seq = new ArrayList<>();
 		for (int i = 0; i < nbColours; i++) {
 			seq.add(pts[i]);
 		}
 		e2.addConstraint(new ColourSequenceConstraint(seq));
 
-		GraphConfiguration<ColourPointLCH> gc = new GraphConfiguration<>(e0, e1, e2);
-		for (ColourPointLCH p : pts) {
+		GraphConfiguration<ColorPoint> gc = new GraphConfiguration<>(e0, e1, e2);
+		for (ColorPoint p : pts) {
 			gc.insert(p);
 		}
 
 		return gc;
 	}
 
-	private DirectSampler<ColourPointLCH, GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> create_BirthDeathSampler(
+	private DirectSampler<ColorPoint, GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> create_BirthDeathSampler(
 			Parameters p, RandomGenerator rndg) {
-		ColorSpace cs = new CIELchColorSpace(false);
-		ColourPointLCH minValsColourPointLCH = new ColourPointLCH(0);
-		minValsColourPointLCH.setComponents(cs.getMinValue(0), cs.getMinValue(1), cs.getMinValue(2));
-		ColourPointLCH maxValsColourPointLCH = new ColourPointLCH(p.getInteger("nbColours") - 1);
-		maxValsColourPointLCH.setComponents(cs.getMaxValue(0), cs.getMaxValue(1), cs.getMaxValue(2));
-		UniformBirth<ColourPointLCH> birth = new UniformBirth<ColourPointLCH>(rndg, minValsColourPointLCH,
-				maxValsColourPointLCH, new ColourPointLCHBuilder());
-		DirectSampler<ColourPointLCH, GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> ds = new DirectSampler<>(
+		ColorSpace cs = new CIELabColorSpace(false);
+		ColorPoint minValsColorPoint = new ColorPoint(0);
+		minValsColorPoint.setComponents(cs.getMinValue(0), cs.getMinValue(1), cs.getMinValue(2));
+		ColorPoint maxValsColorPoint = new ColorPoint(p.getInteger("nbColours") - 1);
+		maxValsColorPoint.setComponents(cs.getMaxValue(0), cs.getMaxValue(1), cs.getMaxValue(2));
+		UniformBirth<ColorPoint> birth = new UniformBirth<ColorPoint>(rndg, minValsColorPoint, maxValsColorPoint,
+				new ColorPointBuilder());
+		DirectSampler<ColorPoint, GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> ds = new DirectSampler<>(
 				new UniformDistribution(rndg, 0, p.getInteger("nbColours")), birth);
-
 		return ds;
 	}
 
-	public Sampler<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> create_sampler(
-			Parameters p, RandomGenerator rndg,
-			DirectSampler<ColourPointLCH, GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> ds) {
+	public Sampler<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> create_sampler(Parameters p,
+			RandomGenerator rndg,
+			DirectSampler<ColorPoint, GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> ds) {
 
-		KernelFactory<ColourPointLCH, GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> kf = new KernelFactory<>();
-		List<Kernel<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>>> kernels = new ArrayList<>();
-		ColourPointLCHBuilder cpb = new ColourPointLCHBuilder();
+		KernelFactory<ColorPoint, GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> kf = new KernelFactory<>();
+		List<Kernel<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>>> kernels = new ArrayList<>();
+		ColorPointBuilder cpb = new ColorPointBuilder();
 		// TODO Put the components ranges in the parameters
-		ColourPointLightnessShift mL = new ColourPointLightnessShift(100f);
-		ColourPointChromaShift mC = new ColourPointChromaShift(100f);
-		ColourPointHueShift mH = new ColourPointHueShift(360f);
+		ColourPointLightnessShift mL = new ColourPointLightnessShift(100d);
+		ColourPointAShift ma = new ColourPointAShift(256d);
+		ColourPointBShift mb = new ColourPointBShift(256d);
 
-		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, mL, 1., "Lightness shift"));
-		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, mC, 1., "Chroma shift"));
-		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, mH, 1., "Hue shift"));
+		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, mL, 1., "Point Lightness shift"));
+		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, ma, 1., "Point a shift"));
+		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, mb, 1., "Point b shift"));
 
 		Acceptance<SimpleTemperature> acceptance = new MetropolisAcceptance<>();
-		Sampler<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> sampler = new GreenSampler<>(
-				rndg, ds, acceptance, kernels);
+		Sampler<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> sampler = new GreenSampler<>(rndg,
+				ds, acceptance, kernels);
 		return sampler;
 	}
 
-	private void addVisitor(Visitor<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> v) {
+	private void addVisitor(Visitor<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> v) {
 		this.visitors.add(v);
+	}
+
+	private GraphConfiguration<ColorPoint> getFinalConfiguration() {
+		return this.final_configuration;
 	}
 
 	// #############################################
 	// Main - for test purpose
 	// #############################################
-	public static void main(String[] argv) throws InterruptedException {
+	public static void main(String[] argv) throws InterruptedException, IOException {
 
 		// TODO Write an input options parser...
 		boolean GUI_LOGGING = true;
@@ -220,6 +234,29 @@ public class Extrapalettor implements Runnable {
 		Thread t = new Thread(palettor);
 		t.run();
 		t.join();
+
+		// JSON Logging
+		// TODO : make something better like a JSON logger/exporter.
+//		GraphConfiguration<ColorPoint> fc = palettor.getFinalConfiguration();
+//		FileWriter fw = new FileWriter("C:/Users/Adminlocal/Desktop/palettes_viewer/data/palette.json");
+//		fw.write("palette='[");
+//		CIELabColorSpace cslab = new CIELabColorSpace(false);
+//		for (ColorPoint c : fc) {
+//			// float[] lab
+//			// =cslab.fromCIEXYZ(c.getColorSpace().toCIEXYZ(c.getComponents()));
+//			float[] lab = c.getComponents();
+//			float[] rgb = cslab.toRGB(lab);
+//			float cR = rgb[0] < 0 ? 0 : rgb[0] > 1 ? 1 : rgb[0];
+//			float cG = rgb[1] < 0 ? 0 : rgb[1] > 1 ? 1 : rgb[1];
+//			float cB = rgb[2] < 0 ? 0 : rgb[2] > 1 ? 1 : rgb[2];
+//			String hex = String.format("0x%02x%02x%02x", (int) (cR * 255), (int) (cG * 255), (int) (cB * 255));
+//			String jsonstr = "{" + "\"l\" : \"" + lab[0] + "\", " + "\"a\" : \"" + lab[1] + "\", " + "\"b\" : \""
+//					+ lab[2] + "\", " + "\"hexcolor\" : \"" + hex + "\"" + "},";
+//			fw.write(jsonstr);
+//		}
+//		fw.write("]'");
+//		fw.flush();
+//		fw.close();
 	}
 
 }

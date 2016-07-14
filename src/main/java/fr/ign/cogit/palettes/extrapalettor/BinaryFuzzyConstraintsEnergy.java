@@ -10,19 +10,18 @@ import java.util.Set;
 import fr.ign.cogit.palettes.extrapalettor.constraints.GraphConstraint;
 import fr.ign.rjmcmc.energy.BinaryEnergy;
 
-public class BinaryFuzzyConstraintsEnergy implements BinaryEnergy<ColourPointLCH, ColourPointLCH> {
+public class BinaryFuzzyConstraintsEnergy implements BinaryEnergy<ColorPoint, ColorPoint> {
 
-	
 	static final double alpha = 10d;
-			
-	public Map<Set<Integer>, List<GraphConstraint<ColourPointLCH>>> constraints;
+
+	public Map<Set<Integer>, List<GraphConstraint<ColorPoint>>> constraints;
 
 	public BinaryFuzzyConstraintsEnergy() {
 		this.constraints = new HashMap<>();
 	}
 
 	@Override
-	public double getValue(ColourPointLCH c1, ColourPointLCH c2) {
+	public double getValue(ColorPoint c1, ColorPoint c2) {
 		Set<Integer> ptsset = new HashSet<>();
 		ptsset.add(c1.getId());
 		ptsset.add(c2.getId());
@@ -30,18 +29,18 @@ public class BinaryFuzzyConstraintsEnergy implements BinaryEnergy<ColourPointLCH
 			return 0;
 		}
 		double e = 0;
-		for (GraphConstraint<ColourPointLCH> c : constraints.get(ptsset)) {
-			e += alpha*(1. - c.evaluate(c1, c2));
+		for (GraphConstraint<ColorPoint> c : constraints.get(ptsset)) {
+			e += alpha * (1. - c.evaluate(c1, c2));
 		}
 		return e;
 	}
 
 	// TODO change to only accept Binary Energies
-	public void addConstraint(GraphConstraint<ColourPointLCH> c) {
+	public void addConstraint(GraphConstraint<ColorPoint> c) {
 		List<Integer> pts = c.getVerticesIndexes();
 		Set<Integer> ptsset = new HashSet<>(pts);
 		if (this.constraints.get(ptsset) == null) {
-			this.constraints.put(ptsset, new ArrayList<GraphConstraint<ColourPointLCH>>(1));
+			this.constraints.put(ptsset, new ArrayList<GraphConstraint<ColorPoint>>(1));
 		}
 		this.constraints.get(ptsset).add(c);
 	}

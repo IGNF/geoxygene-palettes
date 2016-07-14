@@ -10,7 +10,7 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import fr.ign.cogit.palettes.extrapalettor.ColourPointLCH;
+import fr.ign.cogit.palettes.extrapalettor.ColorPoint;
 import fr.ign.mpp.configuration.BirthDeathModification;
 import fr.ign.mpp.configuration.GraphConfiguration;
 import fr.ign.rjmcmc.sampler.Sampler;
@@ -18,12 +18,12 @@ import fr.ign.simulatedannealing.temperature.Temperature;
 import fr.ign.simulatedannealing.visitor.Visitor;
 
 public class GUIPaletteVisitor extends JPanel
-		implements Visitor<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> {
+		implements Visitor<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> {
 
 	private static final long serialVersionUID = 5216229587205228652L;
 
-	private final List<List<ColourPointLCH>> palettes = new LinkedList<>();
-	private final Comparator<ColourPointLCH> paletteColorsComp;
+	private final List<List<ColorPoint>> palettes = new LinkedList<>();
+	private final Comparator<ColorPoint> paletteColorsComp;
 	private int nVisit = 0;
 
 	private int nIterTrigger = -1;
@@ -32,9 +32,9 @@ public class GUIPaletteVisitor extends JPanel
 	private final boolean PLOT_ITERATION_NUMBER;
 
 	public GUIPaletteVisitor(boolean show_out_of_gamut, boolean plot_niter) {
-		this.paletteColorsComp = new Comparator<ColourPointLCH>() {
+		this.paletteColorsComp = new Comparator<ColorPoint>() {
 			@Override
-			public int compare(ColourPointLCH a, ColourPointLCH b) {
+			public int compare(ColorPoint a, ColorPoint b) {
 				return Integer.compare(a.getId(), b.getId());
 			}
 		};
@@ -43,17 +43,15 @@ public class GUIPaletteVisitor extends JPanel
 	}
 
 	@Override
-	public void begin(GraphConfiguration<ColourPointLCH> conf,
-			Sampler<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> sampler,
-			Temperature temp) {
+	public void begin(GraphConfiguration<ColorPoint> conf,
+			Sampler<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> sampler, Temperature temp) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void end(GraphConfiguration<ColourPointLCH> conf,
-			Sampler<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> sampler,
-			Temperature temp) {
+	public void end(GraphConfiguration<ColorPoint> conf,
+			Sampler<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> sampler, Temperature temp) {
 		// TODO Auto-generated method stub
 	}
 
@@ -64,16 +62,15 @@ public class GUIPaletteVisitor extends JPanel
 	}
 
 	@Override
-	public void visit(GraphConfiguration<ColourPointLCH> conf,
-			Sampler<GraphConfiguration<ColourPointLCH>, BirthDeathModification<ColourPointLCH>> sampler,
-			Temperature temp) {
+	public void visit(GraphConfiguration<ColorPoint> conf,
+			Sampler<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> sampler, Temperature temp) {
 		if (nVisit % nIterTrigger != 0) {
 			nVisit++;
 			return;
 		}
 
-		List<ColourPointLCH> palette = new ArrayList<>();
-		for (ColourPointLCH c : conf) {
+		List<ColorPoint> palette = new ArrayList<>();
+		for (ColorPoint c : conf) {
 			palette.add(c);
 		}
 		palette.sort(this.paletteColorsComp);
@@ -99,9 +96,9 @@ public class GUIPaletteVisitor extends JPanel
 		int cellHeight = this.getHeight() / palettes.size();
 		for (int i = 0; i < this.palettes.size(); i++) {
 			int cellwidth = this.getWidth() / palettes.get(i).size();
-			List<ColourPointLCH> palette = this.palettes.get(i);
+			List<ColorPoint> palette = this.palettes.get(i);
 			for (int j = 0; j < palette.size(); j++) {
-				ColourPointLCH cp = palette.get(j);
+				ColorPoint cp = palette.get(j);
 				float[] rgb = cp.getColorSpace().toRGB(cp.getComponents());
 				Color cRGB = new Color(rgbClamp(rgb[0]), rgbClamp(rgb[1]), rgbClamp(rgb[2]));
 				g.setColor(cRGB);

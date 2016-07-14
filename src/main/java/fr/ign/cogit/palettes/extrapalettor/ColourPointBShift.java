@@ -2,12 +2,13 @@ package fr.ign.cogit.palettes.extrapalettor;
 
 import fr.ign.rjmcmc.kernel.Transform;
 
-public class ColourPointChromaShift implements Transform {
+public class ColourPointBShift implements Transform {
 
-	double shiftrange;
+	private double dimRange;
+	public static final int DIM = 5;
 
-	public ColourPointChromaShift(double range) {
-		this.shiftrange = range;
+	public ColourPointBShift(double range) {
+		this.dimRange = range;
 	}
 
 	@Override
@@ -20,17 +21,18 @@ public class ColourPointChromaShift implements Transform {
 		double shift = in[4];
 
 		out[0] = L;
-		out[1] = (shift - 0.5) * shiftrange + c;
-		out[2] = h;
-		out[3] = in[3];//3 is the colourpoint ID
-		out[4] = 1 - shift;
+		out[1] = c;
+		out[2] = (shift - 0.5) * dimRange + h;
+		;
+		out[3] = in[3];
+		out[4] = 1d - shift;
 		return 1.; // TODO check if this is the probability that the
-					// modification is valid
+		// modification is valid
 	}
 
 	@Override
 	public int dimension() {
-		return 5;
+		return DIM;
 	}
 
 }
