@@ -21,9 +21,9 @@ public class LightnessDistanceFuzzyBinaryConstraint implements GraphConstraint<C
   public double evaluate(ColorPoint... c) {
     assert (c.length == 2);
     assert (c[0].getId() == c1Id && c[1].getId() == c2Id || c[0].getId() == c2Id && c[1].getId() == c1Id); // Maybe
-    float[] labA = c[0].getComponents();
-    float[] labB = c[1].getComponents();
-    double d = Math.abs(labA[0]-labB[0]);
+    float[] lchA = c[0].getComponents();
+    float[] lchB = c[1].getComponents();
+    double d = Math.abs(lchA[0]-lchB[0]);
     return d >= Lthreshold ? 1. : 0.;
   }
 

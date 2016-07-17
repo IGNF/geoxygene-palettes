@@ -6,21 +6,22 @@ import java.util.Arrays;
 import java.util.List;
 
 import fr.ign.cogit.geoxygene.semio.color.CIELabColorSpace;
+import fr.ign.cogit.geoxygene.semio.color.CIELchColorSpace;
 import fr.ign.rjmcmc.kernel.SimpleObject;
 
 /**
- * Palette color point in CIE L*a*b* coordinates
+ * Palette color point in CIE L*c*h* coordinates
  * 
  * @author Bertrand Duménieu
  */
 public class ColorPoint implements SimpleObject {
 
-	// ColourPoint properties contain : the 3 point color components in Lab +
+	// ColourPoint properties contain : the 3 point color components in Lch +
 	// this colour vertex id in the palette graph
 	private final float[] properties;
 
 	// The color space of this ColourPoint
-	private final ColorSpace cs = new CIELabColorSpace(false);
+	private final ColorSpace cs = new CIELchColorSpace(false);
 	private final int csSize = cs.getNumComponents();
 
 	public ColorPoint(int grphId) {

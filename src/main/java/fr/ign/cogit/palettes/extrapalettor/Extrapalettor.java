@@ -1,6 +1,5 @@
 package fr.ign.cogit.palettes.extrapalettor;
 
-import java.awt.Color;
 import java.awt.color.ColorSpace;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -75,7 +74,7 @@ public class Extrapalettor implements Runnable {
 		DEF_PARAMS.set("temp", 1000);
 		DEF_PARAMS.set("deccoef", 0.9999);
 		DEF_PARAMS.set("nbiter", 10000);
-		DEF_PARAMS.set("nbdump", 20000);
+		DEF_PARAMS.set("nbdump", 1000);
 		DEF_PARAMS.set("nbsave", 0);
 		DEF_PARAMS.set("nbColours", 40);
 	}
@@ -132,8 +131,7 @@ public class Extrapalettor implements Runnable {
 			ColorPoint cp = csb.build(
 					// new double[] { rndg.nextFloat() * 100f,
 					// rndg.nextFloat()*100f, rndg.nextFloat() * 360f, i });
-					new double[] { rndg.nextFloat() * 100f, 127f - rndg.nextFloat() * 256f,
-							127f - rndg.nextFloat() * 256f, i });
+					new double[] { rndg.nextFloat() * 100f, rndg.nextFloat() * 100f, rndg.nextFloat() * 360f, i });
 			pts[i] = cp;
 		}
 
@@ -142,7 +140,7 @@ public class Extrapalettor implements Runnable {
 		BinaryFuzzyConstraintsEnergy e1 = new BinaryFuzzyConstraintsEnergy();
 		e1.addConstraint(new LightnessDistanceFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 50));
 		e1.addConstraint(new ChromaProximityFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 1));
-		e1.addConstraint(new HueProximityFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 1));
+		e1.addConstraint(new HueProximityFuzzyBinaryConstraint(pts[0], pts[nbColours - 1], 20));
 
 		NaryEnergy e2 = new NaryEnergy();
 		List<ColorPoint> seq = new ArrayList<>();
@@ -161,7 +159,7 @@ public class Extrapalettor implements Runnable {
 
 	private DirectSampler<ColorPoint, GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> create_BirthDeathSampler(
 			Parameters p, RandomGenerator rndg) {
-		ColorSpace cs = new CIELabColorSpace(false);
+		CIELchColorSpace cs = new CIELchColorSpace(false);
 		ColorPoint minValsColorPoint = new ColorPoint(0);
 		minValsColorPoint.setComponents(cs.getMinValue(0), cs.getMinValue(1), cs.getMinValue(2));
 		ColorPoint maxValsColorPoint = new ColorPoint(p.getInteger("nbColours") - 1);
@@ -182,12 +180,12 @@ public class Extrapalettor implements Runnable {
 		ColorPointBuilder cpb = new ColorPointBuilder();
 		// TODO Put the components ranges in the parameters
 		ColourPointLightnessShift mL = new ColourPointLightnessShift(100d);
-		ColourPointAShift ma = new ColourPointAShift(256d);
-		ColourPointBShift mb = new ColourPointBShift(256d);
+		ColourPointChromaShift mc = new ColourPointChromaShift(100d);
+		ColourPointHueShift mh = new ColourPointHueShift(360d);
 
-		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, mL, 1., "Point Lightness shift"));
-		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, ma, 1., "Point a shift"));
-		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, mb, 1., "Point b shift"));
+		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, mL, 1., "L"));
+		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, mc, 1., "C"));
+		kernels.add(kf.make_uniform_modification_kernel(rndg, cpb, mh, 1., "H"));
 
 		Acceptance<SimpleTemperature> acceptance = new MetropolisAcceptance<>();
 		Sampler<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> sampler = new GreenSampler<>(rndg,
@@ -214,7 +212,7 @@ public class Extrapalettor implements Runnable {
 		boolean GUI_PLOT_ITERATIONS = true;
 
 		Parameters p = new Parameters();
-		p.set("nbColours", 20);
+		p.set("nbColours", 10);
 
 		Extrapalettor palettor = new Extrapalettor(p);
 
@@ -237,26 +235,42 @@ public class Extrapalettor implements Runnable {
 
 		// JSON Logging
 		// TODO : make something better like a JSON logger/exporter.
-//		GraphConfiguration<ColorPoint> fc = palettor.getFinalConfiguration();
-//		FileWriter fw = new FileWriter("C:/Users/Adminlocal/Desktop/palettes_viewer/data/palette.json");
-//		fw.write("palette='[");
-//		CIELabColorSpace cslab = new CIELabColorSpace(false);
-//		for (ColorPoint c : fc) {
-//			// float[] lab
-//			// =cslab.fromCIEXYZ(c.getColorSpace().toCIEXYZ(c.getComponents()));
-//			float[] lab = c.getComponents();
-//			float[] rgb = cslab.toRGB(lab);
-//			float cR = rgb[0] < 0 ? 0 : rgb[0] > 1 ? 1 : rgb[0];
-//			float cG = rgb[1] < 0 ? 0 : rgb[1] > 1 ? 1 : rgb[1];
-//			float cB = rgb[2] < 0 ? 0 : rgb[2] > 1 ? 1 : rgb[2];
-//			String hex = String.format("0x%02x%02x%02x", (int) (cR * 255), (int) (cG * 255), (int) (cB * 255));
-//			String jsonstr = "{" + "\"l\" : \"" + lab[0] + "\", " + "\"a\" : \"" + lab[1] + "\", " + "\"b\" : \""
-//					+ lab[2] + "\", " + "\"hexcolor\" : \"" + hex + "\"" + "},";
-//			fw.write(jsonstr);
-//		}
-//		fw.write("]'");
-//		fw.flush();
-//		fw.close();
+		GraphConfiguration<ColorPoint> fc = palettor.getFinalConfiguration();
+		FileWriter fw = new FileWriter("C:/Users/Adminlocal/Desktop/palettes_viewer/data/palette.json");
+		fw.write("palette='[");
+		CIELchColorSpace cslch = new CIELchColorSpace(false);
+		for (ColorPoint c : fc) {
+			float[] lab = cslch.toCIELab(c.getComponents());
+			float[] lch = c.getComponents();
+			System.out.println(c.getId() + " " + lch[0] + " " + lch[1] + " " + lch[2]);
+			float[] rgb = c.getColorSpace().toRGB(lab);
+			int cR = (int) (rgbClamp(rgb[0]) * 255);
+			int cG = (int) (rgbClamp(rgb[1]) * 255);
+			int cB = (int) (rgbClamp(rgb[2]) * 255);
+			String hex = rgbToHex(cR, cG, cB);
+			String jsonstr = "{" + "\"l\" : \"" + lab[0] + "\", " + "\"a\" : \"" + lab[1] + "\", " + "\"b\" : \""
+					+ lab[2] + "\", " + "\"hexcolor\" : \"" + hex + "\"" + "},";
+			fw.write(jsonstr);
+		}
+		fw.write("]'");
+		fw.flush();
+		fw.close();
 	}
 
+	private static float rgbClamp(float c) {
+		return c > 1f ? 1f : c < 0f ? 0f : c;
+	}
+
+	public static String rgbToHex(int r, int g, int b) {
+		String sr = Integer.toHexString(r);
+		String sg = Integer.toHexString(g);
+		String sb = Integer.toHexString(b);
+		if (sr.length() < 2)
+			sr = "0" + sr;
+		if (sg.length() < 2)
+			sg = "0" + sg;
+		if (sb.length() < 2)
+			sb = "0" + sb;
+		return "#" + sr + sg + sb;
+	}
 }

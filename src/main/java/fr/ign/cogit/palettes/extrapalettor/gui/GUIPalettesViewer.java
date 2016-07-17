@@ -17,7 +17,7 @@ public class GUIPalettesViewer extends JFrame {
   public GUIPalettesViewer() {
 //    this.palettespane = new PalettePane();
 //    this.add(palettespane);
-    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   }
 
 //  public void addPalette(Color[] palette) {

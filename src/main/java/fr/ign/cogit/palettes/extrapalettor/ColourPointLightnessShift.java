@@ -13,7 +13,6 @@ public class ColourPointLightnessShift implements Transform {
 
 	@Override
 	public double apply(boolean direct, double[] in, double[] out) {
-		// in = 4
 		double L = in[0];
 		double c = in[1];
 		double h = in[2];
@@ -23,7 +22,7 @@ public class ColourPointLightnessShift implements Transform {
 		out[2] = h;
 		out[3] = in[3];
 		out[4] = 1d - shift;
-		return 1.; 
+		return 1d; 
 		// TODO check if this is the probability that the
 					// modification is valid
 	}

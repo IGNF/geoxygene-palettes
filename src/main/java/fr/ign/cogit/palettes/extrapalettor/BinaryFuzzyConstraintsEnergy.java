@@ -12,7 +12,7 @@ import fr.ign.rjmcmc.energy.BinaryEnergy;
 
 public class BinaryFuzzyConstraintsEnergy implements BinaryEnergy<ColorPoint, ColorPoint> {
 
-	static final double alpha = 10d;
+	static final double alpha = 100d;
 
 	public Map<Set<Integer>, List<GraphConstraint<ColorPoint>>> constraints;
 
