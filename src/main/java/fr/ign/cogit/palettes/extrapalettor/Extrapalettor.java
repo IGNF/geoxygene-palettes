@@ -235,42 +235,30 @@ public class Extrapalettor implements Runnable {
 
 		// JSON Logging
 		// TODO : make something better like a JSON logger/exporter.
-		GraphConfiguration<ColorPoint> fc = palettor.getFinalConfiguration();
-		FileWriter fw = new FileWriter("C:/Users/Adminlocal/Desktop/palettes_viewer/data/palette.json");
-		fw.write("palette='[");
-		CIELchColorSpace cslch = new CIELchColorSpace(false);
-		for (ColorPoint c : fc) {
-			float[] lab = cslch.toCIELab(c.getComponents());
-			float[] lch = c.getComponents();
-			System.out.println(c.getId() + " " + lch[0] + " " + lch[1] + " " + lch[2]);
-			float[] rgb = c.getColorSpace().toRGB(lab);
-			int cR = (int) (rgbClamp(rgb[0]) * 255);
-			int cG = (int) (rgbClamp(rgb[1]) * 255);
-			int cB = (int) (rgbClamp(rgb[2]) * 255);
-			String hex = rgbToHex(cR, cG, cB);
-			String jsonstr = "{" + "\"l\" : \"" + lab[0] + "\", " + "\"a\" : \"" + lab[1] + "\", " + "\"b\" : \""
-					+ lab[2] + "\", " + "\"hexcolor\" : \"" + hex + "\"" + "},";
-			fw.write(jsonstr);
-		}
-		fw.write("]'");
-		fw.flush();
-		fw.close();
+//		GraphConfiguration<ColorPoint> fc = palettor.getFinalConfiguration();
+//		FileWriter fw = new FileWriter("");
+//		fw.write("palette='[");
+//		CIELchColorSpace cslch = new CIELchColorSpace(false);
+//		for (ColorPoint c : fc) {
+//			float[] lab = cslch.toCIELab(c.getComponents());
+//			float[] lch = c.getComponents();
+//			System.out.println(c.getId() + " " + lch[0] + " " + lch[1] + " " + lch[2]);
+//			float[] rgb = c.getColorSpace().toRGB(lab);
+//			int cR = (int) (rgbClamp(rgb[0]) * 255);
+//			int cG = (int) (rgbClamp(rgb[1]) * 255);
+//			int cB = (int) (rgbClamp(rgb[2]) * 255);
+//			String hex = ColorFormatter.rgbToHex(cR, cG, cB);
+//			String jsonstr = "{" + "\"l\" : \"" + lab[0] + "\", " + "\"a\" : \"" + lab[1] + "\", " + "\"b\" : \""
+//					+ lab[2] + "\", " + "\"hexcolor\" : \"" + hex + "\"" + "},";
+//			fw.write(jsonstr);
+//		}
+//		fw.write("]'");
+//		fw.flush();
+//		fw.close();
 	}
 
 	private static float rgbClamp(float c) {
 		return c > 1f ? 1f : c < 0f ? 0f : c;
 	}
 
-	public static String rgbToHex(int r, int g, int b) {
-		String sr = Integer.toHexString(r);
-		String sg = Integer.toHexString(g);
-		String sb = Integer.toHexString(b);
-		if (sr.length() < 2)
-			sr = "0" + sr;
-		if (sg.length() < 2)
-			sg = "0" + sg;
-		if (sb.length() < 2)
-			sb = "0" + sb;
-		return "#" + sr + sg + sb;
-	}
 }

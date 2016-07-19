@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<title>Color sequences viewer</title>
+<meta charset="utf-8">
+</head>
+<body style="margin: 0;">
+
+	<div id="ThreeJS" style="position: absolute; left: 0px; top: 0px"></div>
+
+
+	<script src="js/chroma.js"></script>
+	<script src="js/gamut.js"></script>
+	<script src="js/three.min.js"></script>
+	<script src="js/OrbitControls.js"></script>
+	<script src='js/DAT.GUI.min.js'></script>
+
+	<script>
+		var gamut, gui, params, container, scene, camera, renderer, controls;
+
+		var gamut = {
+				lod : 1,
+				current_shape : null,
+				activate_wireframe : false,
+				build_gamut : function(){
+					if(scene ==  undefined){
+						return;
+					}
+					if (gamut.current_shape != null) {
+						scene.remove(gamut.current_shape)
+					}
+					var material = new THREE.MeshBasicMaterial({
+						color : 0xFFFFFF,
+						side : THREE.DoubleSide,
+						vertexColors : THREE.VertexColors,
+						wireframe : gamut.activate_wireframe
+					});
+					material.needsUpdate = true;
+					var gamut_attributes = Gamut3D_sRGB_LAB(gamut.lod);
+					var geometry = new THREE.BufferGeometry();
+					console.log(gamut_attributes.position)
+					geometry.addAttribute('position', new THREE.BufferAttribute(
+							gamut_attributes.position.array, 3));
+					geometry.addAttribute('color', new THREE.BufferAttribute(
+							gamut_attributes.color.array, 3));
+					geometry.computeBoundingBox();
+					geometry.computeBoundingSphere();
+					geometry.computeVertexNormals();
+					geometry.computeFaceNormals();
+
+					shape = new THREE.Mesh(geometry, material);
+					scene.add(shape);
+					gamut.current_shape = shape;
+				}
+		}  
+		/*
+		 *Set the GUI and the parameters
+		 */
+		gui = new DAT.GUI();
+		gui.add( gamut, "lod",1,50,1).onChange(gamut.build_gamut);
+		gui.add( gamut, "activate_wireframe",true,false).onChange(function(){
+			gamut.current_shape.material.wireframe=gamut.activate_wireframe;
+		});
+
+		/**
+		 * Render the scene
+		 **/
+		init();
+		animate();
+
+		// Sets up the scene
+		function init() {
+
+			// Create the scene and set the scene size.
+			scene = new THREE.Scene();
+			var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+			var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+
+			// Create a camera, zoom it out from the model a bit, and add it to the scene.
+			camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+			scene.add(camera);
+			camera.position.set(0, 150, 400);
+			camera.lookAt(scene.position);
+
+			// Create a renderer and add it to the DOM.
+			renderer = new THREE.WebGLRenderer({
+				antialias : true
+			});
+			renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+			container = document.getElementById('ThreeJS');
+			container.appendChild(renderer.domElement);
+
+			// CONTROLS
+			controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+			// Create an event listener that resizes the renderer with the browser window.
+			window.addEventListener('resize', function() {
+				var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
+				renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+				camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+				camera.updateProjectionMatrix();
+			});
+
+			// Set the background color of the scene.
+			renderer.setClearColor(0x000000, 1);
+
+			//Build the gamut
+			gamut.build_gamut();
+
+			// Create a light, set its position, and add it to the scene.
+			var light = new THREE.PointLight(0xffffff);
+			light.position.set(-100, 200, 100);
+			scene.add(light);
+
+		}
+
+		function animate() {
+			requestAnimationFrame(animate);
+			renderer.render(scene, camera);
+			controls.update();
+
+		}
+		
+	</script>
+</body>
+</html>
