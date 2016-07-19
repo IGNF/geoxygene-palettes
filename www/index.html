@@ -7,38 +7,48 @@
 <body style="margin: 0;">
 
 	<div id="ThreeJS" style="position: absolute; left: 0px; top: 0px"></div>
-
-
-	<script src="js/chroma.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.1.1/chroma.min.js"></script> //needed for gamut.js
 	<script src="js/gamut.js"></script>
-	<script src="js/three.min.js"></script>
-	<script src="js/OrbitControls.js"></script>
-	<script src='js/DAT.GUI.min.js'></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.min.js"></script>
+	<script src="http://threejs.org/examples/js/controls/OrbitControls.js"></script>
+	<script src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js'></script>
 
 	<script>
-		var gamut, gui, params, container, scene, camera, renderer, controls;
+		var gamut, gui, container, scene, camera, renderer, controls;
+		
+		/****************************/
+		/*
+		* INIT THE SCENE 
+		*/
+		bscene(); 
+				 	
+		/*
+		*CREATES THE GAMUT OBJECT
+		*/
+		gamut = new Gamut();
+		scene.add(gamut.shape);
+		
+		/*
+		 *BUILDS THE INTERFACE
+		 */
+		 binterface();
 
-		var gamut = {
-				lod : 1,
-				current_shape : null,
-				activate_wireframe : false,
-				build_gamut : function(){
-					if(scene ==  undefined){
-						return;
-					}
-					if (gamut.current_shape != null) {
-						scene.remove(gamut.current_shape)
-					}
-					var material = new THREE.MeshBasicMaterial({
-						color : 0xFFFFFF,
-						side : THREE.DoubleSide,
-						vertexColors : THREE.VertexColors,
-						wireframe : gamut.activate_wireframe
-					});
-					material.needsUpdate = true;
-					var gamut_attributes = Gamut3D_sRGB_LAB(gamut.lod);
+		/**
+		 * RENDER
+		 **/
+		animate();
+
+
+		/****************************/
+
+		function Gamut(){
+				this.detail = 5;
+				this.name = 'sRGBGamut';
+				this.view  = THREE.BackSide;
+				this.shape = null;
+				this.update_gamut = function(detail){
+				var gamut_attributes = Gamut3D_sRGB_LAB(detail);
 					var geometry = new THREE.BufferGeometry();
-					console.log(gamut_attributes.position)
 					geometry.addAttribute('position', new THREE.BufferAttribute(
 							gamut_attributes.position.array, 3));
 					geometry.addAttribute('color', new THREE.BufferAttribute(
@@ -47,40 +57,31 @@
 					geometry.computeBoundingSphere();
 					geometry.computeVertexNormals();
 					geometry.computeFaceNormals();
+					this.shape.geometry = geometry;	
+				};
+				this.build_gamut = function(detail){
+					this.shape = new THREE.Mesh(new THREE.BoxGeometry( 1, 1, 1 ),new THREE.MeshBasicMaterial({color : 0xFFFFFF,vertexColors : THREE.VertexColors,transparent:true}))
+					this.shape.name=name;
+					this.shape.material.needsUpdate = true;
+					this.update_gamut(detail);					
+				};
 
-					shape = new THREE.Mesh(geometry, material);
-					scene.add(shape);
-					gamut.current_shape = shape;
-				}
-		}  
-		/*
-		 *Set the GUI and the parameters
-		 */
-		gui = new DAT.GUI();
-		gui.add( gamut, "lod",1,50,1).onChange(gamut.build_gamut);
-		gui.add( gamut, "activate_wireframe",true,false).onChange(function(){
-			gamut.current_shape.material.wireframe=gamut.activate_wireframe;
-		});
-
-		/**
-		 * Render the scene
-		 **/
-		init();
-		animate();
-
+				//Init!
+				this.build_gamut(this.detail);
+		 }
+		 
+		 
 		// Sets up the scene
-		function init() {
-
+		function bscene() {
 			// Create the scene and set the scene size.
 			scene = new THREE.Scene();
 			var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
-			var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+			var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 10000;
 
 			// Create a camera, zoom it out from the model a bit, and add it to the scene.
 			camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 			scene.add(camera);
-			camera.position.set(0, 150, 400);
-			camera.lookAt(scene.position);
+			camera.position.set(250, -200, 0);    		
 
 			// Create a renderer and add it to the DOM.
 			renderer = new THREE.WebGLRenderer({
@@ -90,9 +91,12 @@
 			container = document.getElementById('ThreeJS');
 			container.appendChild(renderer.domElement);
 
-			// CONTROLS
+			// Camera control
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
+			controls.target= new THREE.Vector3(50,0,0); //Look at the neutral grey (no specific illuimant here)
 
+			//Debug axis
+			scene.add(new THREE.AxisHelper(30));
 			// Create an event listener that resizes the renderer with the browser window.
 			window.addEventListener('resize', function() {
 				var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
@@ -101,25 +105,49 @@
 				camera.updateProjectionMatrix();
 			});
 
-			// Set the background color of the scene.
-			renderer.setClearColor(0x000000, 1);
-
-			//Build the gamut
-			gamut.build_gamut();
+			// Set the background color of the scene to neutral grey.
+			renderer.setClearColor(0xC0C0C0, 1);
 
 			// Create a light, set its position, and add it to the scene.
-			var light = new THREE.PointLight(0xffffff);
-			light.position.set(-100, 200, 100);
+			var light = new THREE.AmbientLight(0xffffff);
 			scene.add(light);
 
+		}
+	
+		function binterface() {
+			gui = new dat.GUI();
+			var gf = gui.addFolder('sRGB Gamut');
+			gf.open();
+			var lodController = gf .add( gamut, "detail",1,50);
+			lodController.step(1);	
+			lodController.onChange(function(detailValue){gamut.update_gamut(detailValue)});
+			
+			gf .add(gamut.shape.material, "opacity",0,1).onChange(function(opacityValue){
+				gamut.shape.material.opacity = opacityValue;
+			});
+			
+			gf .add(gamut.shape.material, "wireframe",true,false).onChange(function(wireframeValue){
+				gamut.shape.material.wireframe = wireframeValue;
+			});
+			
+			gf .add( gamut, "view",["Full","Interior"]).onChange(function(viewValue){
+				if(viewValue == "Full"){
+					gamut.view = THREE.DoubleSide;
+					gamut.shape.material.side = THREE.DoubleSide;
+				}
+				if(viewValue == "Interior"){
+					gamut.view = THREE.BackSide;
+					gamut.shape.material.side = THREE.BackSide;
+				}
+			});
 		}
 
 		function animate() {
 			requestAnimationFrame(animate);
 			renderer.render(scene, camera);
 			controls.update();
-
 		}
+		
 		
 	</script>
 </body>
