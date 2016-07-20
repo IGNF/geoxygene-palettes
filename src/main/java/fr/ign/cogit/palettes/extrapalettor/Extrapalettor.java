@@ -4,6 +4,7 @@ import java.awt.color.ColorSpace;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -234,25 +235,22 @@ public class Extrapalettor implements Runnable {
 		t.join();
 
 		// JSON Logging
-		// TODO : make something better like a JSON logger/exporter.
+		// TODO : make something better...like a decent JSON logger/exporter.
 //		GraphConfiguration<ColorPoint> fc = palettor.getFinalConfiguration();
-//		FileWriter fw = new FileWriter("");
-//		fw.write("palette='[");
+//		FileWriter fw = new FileWriter("test.json");
+//		fw.write("pdata='{");
 //		CIELchColorSpace cslch = new CIELchColorSpace(false);
 //		for (ColorPoint c : fc) {
 //			float[] lab = cslch.toCIELab(c.getComponents());
 //			float[] lch = c.getComponents();
 //			System.out.println(c.getId() + " " + lch[0] + " " + lch[1] + " " + lch[2]);
 //			float[] rgb = c.getColorSpace().toRGB(lab);
-//			int cR = (int) (rgbClamp(rgb[0]) * 255);
-//			int cG = (int) (rgbClamp(rgb[1]) * 255);
-//			int cB = (int) (rgbClamp(rgb[2]) * 255);
-//			String hex = ColorFormatter.rgbToHex(cR, cG, cB);
-//			String jsonstr = "{" + "\"l\" : \"" + lab[0] + "\", " + "\"a\" : \"" + lab[1] + "\", " + "\"b\" : \""
-//					+ lab[2] + "\", " + "\"hexcolor\" : \"" + hex + "\"" + "},";
-//			fw.write(jsonstr);
+//			rgb[0] = rgbClamp(rgb[0]) * 255;
+//			rgb[1] = rgbClamp(rgb[1]) * 255;
+//			rgb[2] = rgbClamp(rgb[2]) * 255;
+//			fw.write(Arrays.toString(rgb)+",");
 //		}
-//		fw.write("]'");
+//		fw.write("}'");
 //		fw.flush();
 //		fw.close();
 	}

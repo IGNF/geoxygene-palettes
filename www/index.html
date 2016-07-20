@@ -6,71 +6,115 @@
 </head>
 <body style="margin: 0;">
 
+  	<!-- Three scene container-->
 	<div id="ThreeJS" style="position: absolute; left: 0px; top: 0px"></div>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.1.1/chroma.min.js"></script> //needed for gamut.js
+	
+	<!-- The palette-->
+	<script type="text/javascript" src="data/palette.json"></script>
+	
+	<!-- Libraries-->
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.1.1/chroma.min.js"></script>
 	<script src="js/gamut.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.min.js"></script>
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.min.js"></script>
 	<script src="http://threejs.org/examples/js/controls/OrbitControls.js"></script>
-	<script src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js'></script>
+	<script
+		src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js'></script>
 
 	<script>
 		var gamut, gui, container, scene, camera, renderer, controls;
-		
+
 		/****************************/
 		/*
-		* INIT THE SCENE 
-		*/
-		bscene(); 
-				 	
+		 * INIT THE SCENE 
+		 */
+		bscene();
+
 		/*
-		*CREATES THE GAMUT OBJECT
-		*/
+		 *CREATES THE GAMUT OBJECT
+		 */
 		gamut = new Gamut();
 		scene.add(gamut.shape);
-		
+
+		/*
+		 * CREATE THE PALETTE OBJECT AND ADD IT TO THE SCENE
+		 */
+		var ptex = new THREE.TextureLoader().load('images/circle.png');
+		palette = new Palette();
+		palette.addToScene();
+
 		/*
 		 *BUILDS THE INTERFACE
 		 */
-		 binterface();
+		binterface();
 
 		/**
 		 * RENDER
 		 **/
 		animate();
 
-
 		/****************************/
 
-		function Gamut(){
-				this.detail = 5;
-				this.name = 'sRGBGamut';
-				this.view  = THREE.BackSide;
-				this.shape = null;
-				this.update_gamut = function(detail){
+		function Gamut() {
+			this.detail = 5;
+			this.name = 'sRGBGamut';
+			this.view = THREE.BackSide;
+			this.shape = null;
+			this.update_gamut = function(detail) {
 				var gamut_attributes = Gamut3D_sRGB_LAB(detail);
-					var geometry = new THREE.BufferGeometry();
-					geometry.addAttribute('position', new THREE.BufferAttribute(
-							gamut_attributes.position.array, 3));
-					geometry.addAttribute('color', new THREE.BufferAttribute(
-							gamut_attributes.color.array, 3));
-					geometry.computeBoundingBox();
-					geometry.computeBoundingSphere();
-					geometry.computeVertexNormals();
-					geometry.computeFaceNormals();
-					this.shape.geometry = geometry;	
-				};
-				this.build_gamut = function(detail){
-					this.shape = new THREE.Mesh(new THREE.BoxGeometry( 1, 1, 1 ),new THREE.MeshLambertMaterial({color : 0xFFFFFF,vertexColors : THREE.VertexColors,transparent:true}))
-					this.shape.name=name;
-					this.shape.material.needsUpdate = true;
-					this.update_gamut(detail);					
-				};
+				var geometry = new THREE.BufferGeometry();
+				geometry.addAttribute('position', new THREE.BufferAttribute(
+						gamut_attributes.position.array, 3));
+				geometry.addAttribute('color', new THREE.BufferAttribute(
+						gamut_attributes.color.array, 3));
+				geometry.computeBoundingBox();
+				geometry.computeBoundingSphere();
+				geometry.computeVertexNormals();
+				geometry.computeFaceNormals();
+				this.shape.geometry = geometry;
+			};
+			this.build_gamut = function(detail) {
+				this.shape = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1),
+						new THREE.MeshLambertMaterial({
+							color : 0xFFFFFF,
+							vertexColors : THREE.VertexColors,
+							transparent : true,
+							depthTest : false,
+							opacity : 1,
+							side : THREE.BackSide
+						}))
+				this.shape.name = name;
+				this.shape.material.needsUpdate = true;
+				this.update_gamut(detail);
+			};
 
-				//Init!
-				this.build_gamut(this.detail);
-		 }
-		 
-		 
+			//Init!
+			this.build_gamut(this.detail);
+		}
+
+		function Palette() {
+			var c, sprites = [], pal = JSON.parse(pdata);
+			for (i = 0; i < pal.length; i++) {
+			   c = chroma(pal[i]);
+				var circle = new THREE.SpriteMaterial({
+					map : ptex,
+					color :  c.hex()
+				});
+				var sprite = new THREE.Sprite(circle);
+				var clab = c.lab();
+				sprite.position.set(clab[0],clab[1],clab[2]);
+				sprite.scale.set(6, 6, 1.0); // imageWidth, imageHeight
+				sprites.push(sprite);
+			}
+
+			 this.addToScene = function() {
+				for (s in sprites) {
+					scene.add(sprites[s]);
+				}
+			}
+		}
+
 		// Sets up the scene
 		function bscene() {
 			// Create the scene and set the scene size.
@@ -81,7 +125,7 @@
 			// Create a camera, zoom it out from the model a bit, and add it to the scene.
 			camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 			scene.add(camera);
-			camera.position.set(250, -200, 0);    		
+			camera.position.set(250, -200, 0);
 
 			// Create a renderer and add it to the DOM.
 			renderer = new THREE.WebGLRenderer({
@@ -93,7 +137,7 @@
 
 			// Camera control
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
-			controls.target= new THREE.Vector3(50,0,0); //Look at the neutral grey (no specific illuimant here)
+			controls.target = new THREE.Vector3(50, 0, 0); //Look at the neutral grey (no specific illuimant here)
 
 			//Debug axis
 			scene.add(new THREE.AxisHelper(30));
@@ -113,33 +157,38 @@
 			scene.add(light);
 
 		}
-	
+
 		function binterface() {
 			gui = new dat.GUI();
 			var gf = gui.addFolder('sRGB Gamut');
 			gf.open();
-			var lodController = gf .add( gamut, "detail",1,50);
-			lodController.step(1);	
-			lodController.onChange(function(detailValue){gamut.update_gamut(detailValue)});
-			
-			gf .add(gamut.shape.material, "opacity",0,1).onChange(function(opacityValue){
-				gamut.shape.material.opacity = opacityValue;
+			var lodController = gf.add(gamut, "detail", 1, 50);
+			lodController.step(1);
+			lodController.onChange(function(detailValue) {
+				gamut.update_gamut(detailValue)
 			});
-			
-			gf .add(gamut.shape.material, "wireframe",true,false).onChange(function(wireframeValue){
-				gamut.shape.material.wireframe = wireframeValue;
-			});
-			
-			gf .add( gamut, "view",["Full","Interior"]).onChange(function(viewValue){
-				if(viewValue == "Full"){
-					gamut.view = THREE.DoubleSide;
-					gamut.shape.material.side = THREE.DoubleSide;
-				}
-				if(viewValue == "Interior"){
-					gamut.view = THREE.BackSide;
-					gamut.shape.material.side = THREE.BackSide;
-				}
-			});
+
+			gf.add(gamut.shape.material, "opacity", 0, 1).onChange(
+					function(opacityValue) {
+						gamut.shape.material.opacity = opacityValue;
+					});
+
+			gf.add(gamut.shape.material, "wireframe", true, false).onChange(
+					function(wireframeValue) {
+						gamut.shape.material.wireframe = wireframeValue;
+					});
+
+			gf.add(gamut, "view", [ 'Full', 'Interior' ]).onChange(
+					function(viewValue) {
+						if (viewValue == "Full") {
+							gamut.view = THREE.DoubleSide;
+							gamut.shape.material.side = THREE.DoubleSide;
+						}
+						if (viewValue == "Interior") {
+							gamut.view = THREE.BackSide;
+							gamut.shape.material.side = THREE.BackSide;
+						}
+					});
 		}
 
 		function animate() {
@@ -147,8 +196,6 @@
 			renderer.render(scene, camera);
 			controls.update();
 		}
-		
-		
 	</script>
 </body>
 </html>
