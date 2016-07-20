@@ -181,12 +181,15 @@
 			gf.add(gamut, "view", [ 'Full', 'Interior' ]).onChange(
 					function(viewValue) {
 						if (viewValue == "Full") {
+							
 							gamut.view = THREE.DoubleSide;
 							gamut.shape.material.side = THREE.DoubleSide;
+							gamut.shape.material.depthTest = true; //Re-enable the depth test to avoid weird rendering in DoubleSide mode.
 						}
 						if (viewValue == "Interior") {
 							gamut.view = THREE.BackSide;
 							gamut.shape.material.side = THREE.BackSide;
+							gamut.shape.material.depthTest = false;
 						}
 					});
 		}
