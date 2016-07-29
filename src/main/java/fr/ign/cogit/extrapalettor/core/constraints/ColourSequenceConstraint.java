@@ -1,14 +1,14 @@
-package fr.ign.cogit.palettes.extrapalettor.constraints;
+package fr.ign.cogit.extrapalettor.core.constraints;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import fr.ign.cogit.extrapalettor.core.ColorPoint;
 import fr.ign.cogit.geoxygene.semio.color.CIELabColorSpace;
 import fr.ign.cogit.geoxygene.semio.color.CIELchColorSpace;
 import fr.ign.cogit.geoxygene.semio.color.ColorDifference;
-import fr.ign.cogit.palettes.extrapalettor.ColorPoint;
 
 public class ColourSequenceConstraint implements GraphConstraint<ColorPoint> {
 

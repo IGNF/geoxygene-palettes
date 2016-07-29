@@ -1,4 +1,4 @@
-package fr.ign.cogit.palettes.extrapalettor;
+package fr.ign.cogit.extrapalettor;
 
 import java.awt.color.ColorSpace;
 import java.io.IOException;
@@ -11,13 +11,20 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import fr.ign.cogit.geoxygene.semio.color.CIELchColorSpace;
-import fr.ign.cogit.palettes.extrapalettor.constraints.ChromaProximityFuzzyBinaryConstraint;
-import fr.ign.cogit.palettes.extrapalettor.constraints.ColourSequenceConstraint;
-import fr.ign.cogit.palettes.extrapalettor.constraints.HueProximityFuzzyBinaryConstraint;
-import fr.ign.cogit.palettes.extrapalettor.constraints.LightnessDistanceFuzzyBinaryConstraint;
-import fr.ign.cogit.palettes.extrapalettor.gui.GUIPalettesViewer;
-import fr.ign.cogit.palettes.extrapalettor.visitors.GUIPaletteVisitor;
-import fr.ign.cogit.palettes.extrapalettor.visitors.PaletteVisitor;
+import fr.ign.cogit.extrapalettor.core.BinaryFuzzyConstraintsEnergy;
+import fr.ign.cogit.extrapalettor.core.ColorPoint;
+import fr.ign.cogit.extrapalettor.core.ColorPointBuilder;
+import fr.ign.cogit.extrapalettor.core.ColourPointChromaShift;
+import fr.ign.cogit.extrapalettor.core.ColourPointHueShift;
+import fr.ign.cogit.extrapalettor.core.ColourPointLightnessShift;
+import fr.ign.cogit.extrapalettor.core.NaryEnergy;
+import fr.ign.cogit.extrapalettor.core.constraints.ChromaProximityFuzzyBinaryConstraint;
+import fr.ign.cogit.extrapalettor.core.constraints.ColourSequenceConstraint;
+import fr.ign.cogit.extrapalettor.core.constraints.HueProximityFuzzyBinaryConstraint;
+import fr.ign.cogit.extrapalettor.core.constraints.LightnessDistanceFuzzyBinaryConstraint;
+import fr.ign.cogit.extrapalettor.gui.GUIPalettesViewer;
+import fr.ign.cogit.extrapalettor.visitors.GUIPaletteVisitor;
+import fr.ign.cogit.extrapalettor.visitors.PaletteVisitor;
 import fr.ign.mpp.DirectSampler;
 import fr.ign.mpp.configuration.BirthDeathModification;
 import fr.ign.mpp.configuration.GraphConfiguration;

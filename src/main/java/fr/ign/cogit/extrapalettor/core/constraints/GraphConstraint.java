@@ -1,4 +1,4 @@
-package fr.ign.cogit.palettes.extrapalettor.constraints;
+package fr.ign.cogit.extrapalettor.core.constraints;
 
 import java.util.List;
 

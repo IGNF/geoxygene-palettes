@@ -1,4 +1,4 @@
-package fr.ign.cogit.palettes.extrapalettor.visitors;
+package fr.ign.cogit.extrapalettor.visitors;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -7,8 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import fr.ign.cogit.geoxygene.semio.color.CIELchColorSpace;
-import fr.ign.cogit.palettes.extrapalettor.ColorPoint;
-import fr.ign.cogit.palettes.extrapalettor.util.colorimetry.ColorUtil;
+import fr.ign.cogit.extrapalettor.core.ColorPoint;
+import fr.ign.cogit.extrapalettor.util.ColorUtil;
 import fr.ign.mpp.configuration.BirthDeathModification;
 import fr.ign.mpp.configuration.GraphConfiguration;
 import fr.ign.rjmcmc.sampler.Sampler;

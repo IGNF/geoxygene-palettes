@@ -1,4 +1,4 @@
-package fr.ign.cogit.palettes.extrapalettor.util.colorimetry;
+package fr.ign.cogit.extrapalettor.util;
 
 public class ColorUtil {
 

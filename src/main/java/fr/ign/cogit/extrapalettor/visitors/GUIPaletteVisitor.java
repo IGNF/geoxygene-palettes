@@ -1,9 +1,8 @@
-package fr.ign.cogit.palettes.extrapalettor.visitors;
+package fr.ign.cogit.extrapalettor.visitors;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,8 +10,8 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import fr.ign.cogit.palettes.extrapalettor.ColorPoint;
-import fr.ign.cogit.palettes.extrapalettor.util.colorimetry.ColorUtil;
+import fr.ign.cogit.extrapalettor.core.ColorPoint;
+import fr.ign.cogit.extrapalettor.util.ColorUtil;
 import fr.ign.mpp.configuration.BirthDeathModification;
 import fr.ign.mpp.configuration.GraphConfiguration;
 import fr.ign.rjmcmc.sampler.Sampler;

@@ -1,4 +1,4 @@
-package fr.ign.cogit.palettes.extrapalettor.gui;
+package fr.ign.cogit.extrapalettor.gui;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;

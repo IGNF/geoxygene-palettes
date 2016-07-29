@@ -1,4 +1,4 @@
-package fr.ign.cogit.palettes.extrapalettor;
+package fr.ign.cogit.extrapalettor.core;
 
 import fr.ign.rjmcmc.energy.BinaryEnergy;
 import fr.ign.rjmcmc.energy.BinaryEnergyOperator;

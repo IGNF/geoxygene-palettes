@@ -1,4 +1,4 @@
-package fr.ign.cogit.palettes.extrapalettor;
+package fr.ign.cogit.extrapalettor.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import fr.ign.cogit.palettes.extrapalettor.constraints.GraphConstraint;
+import fr.ign.cogit.extrapalettor.core.constraints.GraphConstraint;
 import fr.ign.rjmcmc.energy.CollectionEnergy;
 
 public class NaryEnergy implements CollectionEnergy<ColorPoint> {

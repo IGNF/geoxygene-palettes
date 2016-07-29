@@ -1,4 +1,4 @@
-package fr.ign.cogit.palettes.extrapalettor;
+package fr.ign.cogit.extrapalettor.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import fr.ign.cogit.palettes.extrapalettor.constraints.GraphConstraint;
+import fr.ign.cogit.extrapalettor.core.constraints.GraphConstraint;
 import fr.ign.rjmcmc.energy.BinaryEnergy;
 
 public class BinaryFuzzyConstraintsEnergy implements BinaryEnergy<ColorPoint, ColorPoint> {

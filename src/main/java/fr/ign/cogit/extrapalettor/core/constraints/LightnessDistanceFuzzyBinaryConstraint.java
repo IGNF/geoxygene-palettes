@@ -1,9 +1,9 @@
-package fr.ign.cogit.palettes.extrapalettor.constraints;
+package fr.ign.cogit.extrapalettor.core.constraints;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.ign.cogit.palettes.extrapalettor.ColorPoint;
+import fr.ign.cogit.extrapalettor.core.ColorPoint;
 
 public class LightnessDistanceFuzzyBinaryConstraint implements GraphConstraint<ColorPoint> {
 
