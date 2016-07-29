@@ -35,7 +35,8 @@ public class PaletteVisitor implements Visitor<GraphConfiguration<ColorPoint>, B
     // TODO : make something better...like a decent JSON logger/exporter.
     GraphConfiguration<ColorPoint> fc = conf;
     FileWriter fw;
-    String sout = "pdata='[";
+    StringBuilder sout = new StringBuilder(100);
+    sout.append("pdata='[");
     try {
       fw = new FileWriter("./www/data/palette.json");
       int i = 0;
@@ -45,10 +46,10 @@ public class PaletteVisitor implements Visitor<GraphConfiguration<ColorPoint>, B
         rgb[0] = ColorUtil.rgbClamp(rgb[0]) * 255;
         rgb[1] = ColorUtil.rgbClamp(rgb[1]) * 255;
         rgb[2] = ColorUtil.rgbClamp(rgb[2]) * 255;
-        sout += Arrays.toString(rgb) + ((i++ == fc.size() - 1) ? "" : ",");
+        sout.append(Arrays.toString(rgb) + ((i++ == fc.size() - 1) ? "" : ","));
       }
-      fw.write(sout);
-      fw.write("]'");
+      sout.append("]'");
+      fw.write(sout.toString());
       fw.flush();
       fw.close();
     } catch (IOException e) {
