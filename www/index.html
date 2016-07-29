@@ -59,60 +59,31 @@ body,html {
 
 	<!-- Application scripts-->
 	<script>
-		var sld = "<StyledLayerDescriptor version=\"1.0.0\" xmlns=\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd\">";
-		sld += "<NamedLayer><Name>Population_commune_1999_2010_GIP_region</Name><UserStyle><FeatureTypeStyle><Rule><PolygonSymbolizer><Fill><CssParameter name=\"fill\">#ff00ff</CssParameter></Fill><Stroke><CssParameter name=\"stroke-width\">30</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer>";
-		sld += "</StyledLayerDescriptor>";
-		/*var map = L.map('mapid').setView([ 48.243212, -2.981168 ], 8.2);
+		window.onload = function() {
+			sldBody = readTextFile("data/sld.sld");
+			var layer = new ol.layer.Image(
+					{
+						source : new ol.source.ImageWMS(
+								{
+									url : 'http://localhost:8080/geoserver/wms',
+									params : {
+										'LAYERS' : 'cite:Population_commune_1999_2010_GIP_region',
+										'SLD_BODY' : sldBody,
+									},
+									serverType : 'geoserver'
+								})
+					});
 
-		var wms = new L.tileLayer.wms(
-				"http://geobretagne.fr/geoserver/bretagneenvironnement/wms", {
-					layers : 'Population_commune_1999_2010_GIP_region',
-					format : 'image/png',
-					transparent : true,
-					version : '1.1.1',
-					styles : sld,
-				});
-		wms.addTo(map)*/
-		console.log(sld);
+			var map = new ol.Map({
+				layers : [ layer ],
+				target : 'map',
+				view : new ol.View({
+					center : [ -350000, 6100777 ],
+					zoom : 8.0
+				})
+			});
 
-		var sldBody = '<?xml version="1.0" encoding="ISO-8859-1"?><StyledLayerDescriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc"				xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"				xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd">				<NamedLayer>					<Name>cite:Population_commune_1999_2010_GIP_region</Name>					<UserStyle>						<FeatureTypeStyle>							<Rule>								<PolygonSymbolizer>									<Fill>										<CssParameter name="fill">#ff0000</CssParameter>									</Fill>									<Stroke />								</PolygonSymbolizer>							</Rule>						</FeatureTypeStyle>					</UserStyle>				</NamedLayer>			</StyledLayerDescriptor>';
-		
-		var layer = new ol.layer.Image({
-			source : new ol.source.ImageWMS({
-				url : 'http://localhost:8080/geoserver/wms',
-				params : {
-					'LAYERS' : 'cite:Population_commune_1999_2010_GIP_region',
-					'SLD_BODY' : sldBody,
-				},
-				serverType : 'geoserver'
-			})
-		});
-		
-		var map = new ol.Map({
-			layers : [layer],
-			target : 'map',
-			view : new ol.View({
-				center : [ -350000, 6100777 ],
-				zoom : 8.0
-			})
-		});
-
-		
-		/*layer.getSource().updateParams({
-			'SLD_body' : sldBody
-		});*/
-
-		/*var layer = new ol.Layer.WMS("Viz",
-				"http://localhost:8080/geoserver/cite/wms", {
-					layers : 'Population_commune_1999_2010_GIP_region',
-					version : "1.3.0",
-					SldBody : sld,
-					SldVersion : "1.0.0",
-					style : ""
-				});
-		map.addLayer(layer);
-		map.setCenter([ -3, 48.089814 ], 8.6);*/
-
+		}
 		var gamut, gui, container, scene, camera, renderer, controls;
 
 		/****************************/
@@ -292,6 +263,20 @@ body,html {
 			requestAnimationFrame(animate);
 			renderer.render(scene, camera);
 			controls.update();
+		}
+
+		function readTextFile(file) {
+			var rawFile = new XMLHttpRequest(), allText;
+			rawFile.open("GET", file, false);
+			rawFile.onreadystatechange = function() {
+				if (rawFile.readyState === 4) {
+					if (rawFile.status === 200 || rawFile.status == 0) {
+						allText = rawFile.responseText;
+					}
+				}
+			}
+			rawFile.send(null);
+			return allText;
 		}
 	</script>
 </body>
