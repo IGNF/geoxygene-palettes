@@ -8,7 +8,7 @@
 <link rel="stylesheet"
 	href="http://openlayers.org/en/v3.17.1/css/ol.css" type="text/css">
 <style>
-body,html {
+body, html {
 	margin: 0;
 	padding: 0;
 	height: 100%;
@@ -35,18 +35,21 @@ body,html {
 </style>
 <!--  SCRIPTS -->
 <!-- The palette-->
-<script type="text/javascript" src="data/palette.json"></script>
+<script type="text/javascript"
+	src="http://makicarto.fr/data/palette.json"></script>
 
 <!-- Libraries-->
 <script
 	src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.1.1/chroma.min.js"></script>
-<script src="js/gamut.js"></script>
+<script type='text/javascript' src="js/gamut.js"></script>
 <script
 	src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.min.js"></script>
 <script src="http://threejs.org/examples/js/controls/OrbitControls.js"></script>
 <script
 	src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js'></script>
 <script src="http://openlayers.org/en/v3.17.1/build/ol.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 </head>
 <body>
 	<!-- CONTAINERS-->
@@ -59,32 +62,54 @@ body,html {
 
 	<!-- Application scripts-->
 	<script>
-		window.onload = function() {
-			sldBody = readTextFile("data/sld.sld");
-			var layer = new ol.layer.Image(
-					{
-						source : new ol.source.ImageWMS(
-								{
-									url : 'http://localhost:8080/geoserver/wms',
-									params : {
-										'LAYERS' : 'cite:Population_commune_1999_2010_GIP_region',
-										'SLD_BODY' : sldBody,
-									},
-									serverType : 'geoserver'
-								})
-					});
+		
+		var gamut, gui, container, scene, camera, renderer, controls,sldBody;
+		var loadmap = function() {
+            var layer = new ol.layer.Image({
+                source : new ol.source.ImageWMS({
+                    url : 'http://5.39.77.233:8080/geoserver/wms',
+                    //url : 'http://localhost:8080/geoserver/wms',
+                    params : {
+                        layers : 'extrapalettor:pop_bretagne_1999_2010',
+                        sld_body : sldBody,
+                    },
+                    serverType : 'geoserver'
+                })
+            });
 
-			var map = new ol.Map({
-				layers : [ layer ],
-				target : 'map',
-				view : new ol.View({
-					center : [ -350000, 6100777 ],
-					zoom : 8.0
-				})
-			});
+            var map = new ol.Map({
+                layers : [ layer ],
+                target : 'map',
+                view : new ol.View({
+                    center : [ -350000, 6100777 ],
+                    zoom : 8.0
+                })
+            });
 
-		}
-		var gamut, gui, container, scene, camera, renderer, controls;
+        }
+		
+		sldBody = readTextFile("data/sld.xml");
+		//window.onload = loadmap();
+		
+		//Test : request palette
+		$.getJSON(
+				"http://localhost:8080/geoxygene-palettes/build/sequence?n=5",
+				function(jqXHR) {
+					p = new Palette(jqXHR);
+					gamut.loadPalette(p);
+					stylemap(p);
+				}).done(function() {
+			console.log("second success");
+		}).fail(
+				function(jqXHR, textStatus, errorThrown) {
+					console.log(jqXHR.responseText + "->" + textStatus + " : "
+							+ errorThrown + " error");
+				}).always(function() {
+			console.log("complete");
+		});
+
+		/* Resources loading */
+		var ptex = new THREE.TextureLoader().load('images/circle.png');
 
 		/****************************/
 		/*
@@ -97,13 +122,6 @@ body,html {
 		 */
 		gamut = new Gamut();
 		scene.add(gamut.shape);
-
-		/*
-		 * CREATE THE PALETTE OBJECT AND ADD IT TO THE SCENE
-		 */
-		var ptex = new THREE.TextureLoader().load('images/circle.png');
-		palette = new Palette();
-		palette.addToScene();
 
 		/*
 		 *BUILDS THE INTERFACE
@@ -150,30 +168,41 @@ body,html {
 				this.update_gamut(detail);
 			};
 
+			this.loadPalette = function(palette) {
+				palette.colors.forEach(function(c) {
+					var sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+						map : ptex,
+						color : c.hex()
+					}));
+					console.log(sprite);
+					var clab = c.lab();
+					sprite.position.set(clab[0], clab[1], clab[2]);
+					sprite.scale.set(6, 6, 1.0); // imageWidth, imageHeight
+					scene.add(sprite);
+				});
+			}
 			//Init!
 			this.build_gamut(this.detail);
 		}
 
-		function Palette() {
-			var c, sprites = [], pal = JSON.parse(pdata);
-			for (i = 0; i < pal.length; i++) {
-				c = chroma(pal[i]);
-				var circle = new THREE.SpriteMaterial({
-					map : ptex,
-					color : c.hex()
-				});
-				var sprite = new THREE.Sprite(circle);
-				var clab = c.lab();
-				sprite.position.set(clab[0], clab[1], clab[2]);
-				sprite.scale.set(6, 6, 1.0); // imageWidth, imageHeight
-				sprites.push(sprite);
+		//A PALETTE OBJECT
+		function Palette(jsonObj) {
+
+			this.colors = [];
+
+			for (i = 0; i < jsonObj.colors.length; i++) {
+				console.log(chroma(jsonObj.colors[i]));
+				this.colors[i] = chroma(jsonObj.colors[i]);
 			}
 
-			this.addToScene = function() {
-				for (s in sprites) {
-					scene.add(sprites[s]);
-				}
-			}
+		}
+
+		function stylemap(palette) {
+			palette.colors.forEach(function(c,id){
+				sldBody = sldBody.replace("$color"+(id+1)+"$",c.hex());
+			});
+			console.log(sldBody);
+			loadmap();
 		}
 
 		// Sets up the scene

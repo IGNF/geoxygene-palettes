@@ -68,6 +68,8 @@ public class Extrapalettor implements Runnable {
 
   private final List<Visitor<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>>> visitors;
 
+  private GraphConfiguration<ColorPoint> conf;
+
   /**
    * All the default parameters
    */
@@ -125,6 +127,7 @@ public class Extrapalettor implements Runnable {
     viz.init(p.getInteger("nbdump"), p.getInteger("nsave"));
 
     SimulatedAnnealing.optimize(this.rndg, conf, sampler, sch, end, viz);
+    this.conf = conf;
   }
 
   private GraphConfiguration<ColorPoint> create_configuration(ColorSpace cs, double p_e0, int nbColours) {
@@ -196,10 +199,9 @@ public class Extrapalettor implements Runnable {
     return sampler;
   }
 
-  private void addVisitor(Visitor<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> v) {
+  void addVisitor(Visitor<GraphConfiguration<ColorPoint>, BirthDeathModification<ColorPoint>> v) {
     this.visitors.add(v);
   }
-
 
   // #############################################
   // Main - for test purpose
@@ -218,10 +220,10 @@ public class Extrapalettor implements Runnable {
 
     Visitor vConsole = new OutputStreamVisitor<>(System.out);
     palettor.addVisitor(vConsole);
-    
+
     Visitor vGeneral = new PaletteVisitor();
     palettor.addVisitor(vGeneral);
-    
+
     if (GUI_LOGGING) {
       Visitor vGUI = new GUIPaletteVisitor(GUI_OUTLINE_OUTOFSRGBGAMUT, GUI_PLOT_ITERATIONS);
       palettor.addVisitor(vGUI);
@@ -235,6 +237,10 @@ public class Extrapalettor implements Runnable {
     t.run();
     t.join();
 
+  }
+
+  public GraphConfiguration<ColorPoint> getConfiguration() {
+    return this.conf;
   }
 
 }

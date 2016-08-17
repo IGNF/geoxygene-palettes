@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<StyledLayerDescriptor version="1.0.0"
+	xmlns="http://www.opengis.net/sld"
+	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:ogc="http://www.opengis.net/ogc"
+	xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd">
+	<NamedLayer>
+		<Name>extrapalettor:pop_bretagne_1999_2010</Name>
+		<UserStyle>
+			<FeatureTypeStyle>
+				<Rule>
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsGreaterThan>
+								<ogc:PropertyName>p1999_2010</ogc:PropertyName>
+								<ogc:Literal>-25</ogc:Literal>
+							</ogc:PropertyIsGreaterThan>
+							<ogc:PropertyIsLessThanOrEqualTo>
+								<ogc:PropertyName>p1999_2010</ogc:PropertyName>
+								<ogc:Literal>9</ogc:Literal>
+							</ogc:PropertyIsLessThanOrEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<PolygonSymbolizer>
+						<Fill>
+							<CssParameter name="fill">$color1$</CssParameter>
+						</Fill>
+						<Stroke>
+							<CssParameter name="stroke">#000000</CssParameter>
+							<CssParameter name="stroke-width">.1</CssParameter>
+							<CssParameter name="stroke-linejoin">bevel</CssParameter>
+						</Stroke>
+					</PolygonSymbolizer>
+				</Rule>
+				<Rule>
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsGreaterThan>
+								<ogc:PropertyName>p1999_2010</ogc:PropertyName>
+								<ogc:Literal>9</ogc:Literal>
+							</ogc:PropertyIsGreaterThan>
+							<ogc:PropertyIsLessThanOrEqualTo>
+								<ogc:PropertyName>p1999_2010</ogc:PropertyName>
+								<ogc:Literal>42</ogc:Literal>
+							</ogc:PropertyIsLessThanOrEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<PolygonSymbolizer>
+						<Fill>
+							<CssParameter name="fill">$color2$</CssParameter>
+						</Fill>
+						<Stroke>
+							<CssParameter name="stroke">#000000</CssParameter>
+							<CssParameter name="stroke-width">.1</CssParameter>
+							<CssParameter name="stroke-linejoin">bevel</CssParameter>
+						</Stroke>
+					</PolygonSymbolizer>
+				</Rule>
+
+				<Rule>
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsGreaterThan>
+								<ogc:PropertyName>p1999_2010</ogc:PropertyName>
+								<ogc:Literal>42</ogc:Literal>
+							</ogc:PropertyIsGreaterThan>
+							<ogc:PropertyIsLessThanOrEqualTo>
+								<ogc:PropertyName>p1999_2010</ogc:PropertyName>
+								<ogc:Literal>76</ogc:Literal>
+							</ogc:PropertyIsLessThanOrEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<PolygonSymbolizer>
+						<Fill>
+							<CssParameter name="fill">$color3$</CssParameter>
+						</Fill>
+						<Stroke>
+							<CssParameter name="stroke">#000000</CssParameter>
+							<CssParameter name="stroke-width">.1</CssParameter>
+							<CssParameter name="stroke-linejoin">bevel</CssParameter>
+						</Stroke>
+					</PolygonSymbolizer>
+				</Rule>
+
+				<Rule>
+					<ogc:Filter>
+						<ogc:And>
+							<ogc:PropertyIsGreaterThan>
+								<ogc:PropertyName>p1999_2010</ogc:PropertyName>
+								<ogc:Literal>76</ogc:Literal>
+							</ogc:PropertyIsGreaterThan>
+							<ogc:PropertyIsLessThanOrEqualTo>
+								<ogc:PropertyName>p1999_2010</ogc:PropertyName>
+								<ogc:Literal>110</ogc:Literal>
+							</ogc:PropertyIsLessThanOrEqualTo>
+						</ogc:And>
+					</ogc:Filter>
+					<PolygonSymbolizer>
+						<Fill>
+							<CssParameter name="fill">$color4$</CssParameter>
+						</Fill>
+						<Stroke>
+							<CssParameter name="stroke">#000000</CssParameter>
+							<CssParameter name="stroke-width">.1</CssParameter>
+							<CssParameter name="stroke-linejoin">bevel</CssParameter>
+						</Stroke>
+					</PolygonSymbolizer>
+				</Rule>
+			</FeatureTypeStyle>
+		</UserStyle>
+	</NamedLayer>
+</StyledLayerDescriptor>

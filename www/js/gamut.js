@@ -78,8 +78,8 @@ function Gamut3D_sRGB_LAB(alpha) {
 	var f5 = computeFaceCoordinates(rgbcube.cyan, rgbcube.white, rgbcube.blue,
 			alpha);
 	// Black - Red - Yellow - Green square (floor)
-	var f6 = computeFaceCoordinates(rgbcube.black, rgbcube.red,
-			rgbcube.green, alpha);
+	var f6 = computeFaceCoordinates(rgbcube.black, rgbcube.red, rgbcube.green,
+			alpha);
 	/*
 	 * Build the triangles and the webgl arrays
 	 */
@@ -108,9 +108,9 @@ function Gamut3D_sRGB_LAB(alpha) {
 		position[pos_offset] = tl_lab[0] * DEF_SCALE;
 		position[pos_offset + 1] = tl_lab[1] * DEF_SCALE;
 		position[pos_offset + 2] = tl_lab[2] * DEF_SCALE;
-		color[pos_offset] = quads[tl] / 255; // r
-		color[pos_offset + 1] = quads[tl + 1] / 255; // g
-		color[pos_offset + 2] = quads[tl + 2] / 255; // b
+		color[pos_offset] = quads[tl] / 255;
+		color[pos_offset + 1] = quads[tl + 1] / 255;
+		color[pos_offset + 2] = quads[tl + 2] / 255;
 
 		position[pos_offset + 3] = bl_lab[0] * DEF_SCALE;
 		position[pos_offset + 4] = bl_lab[1] * DEF_SCALE;
