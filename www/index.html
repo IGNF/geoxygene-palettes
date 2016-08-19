@@ -14,31 +14,28 @@ body, html {
 	height: 100%;
 }
 
-#map {
+#mapview {
 	float: left;
 	width: 50%;
 	height: 100%;
 	background-color: #C0C0C0;
 }
 
-#ThreeJS {
+#sRGBView {
 	float: right;
 	width: 50%;
 	height: 100%;
 	background-color: #C0C0C0;
 }
 
-.wrap {
+.application {
 	width: 100%;
 	height: 100%;
+	background-color: #C0C0C0;
 }
 </style>
-<!--  SCRIPTS -->
-<!-- The palette-->
-<script type="text/javascript"
-	src="http://makicarto.fr/data/palette.json"></script>
 
-<!-- Libraries-->
+<!-- LIBS-->
 <script
 	src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.1.1/chroma.min.js"></script>
 <script type='text/javascript' src="js/gamut.js"></script>
@@ -52,138 +49,236 @@ body, html {
 	src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 </head>
 <body>
-	<!-- CONTAINERS-->
-	<div class="wrap">
-		<!-- Three.js scene-->
-		<div id="ThreeJS"></div>
-		<!--  Leaflet Map -->
-		<div id="map"></div>
-	</div>
-
 	<!-- Application scripts-->
 	<script>
-		
-		var gamut, gui, container, scene, camera, renderer, controls,sldBody;
-		var loadmap = function() {
-            var layer = new ol.layer.Image({
-                source : new ol.source.ImageWMS({
-                    url : 'http://5.39.77.233:8080/geoserver/wms',
-                    //url : 'http://localhost:8080/geoserver/wms',
-                    params : {
-                        layers : 'extrapalettor:pop_bretagne_1999_2010',
-                        sld_body : sldBody,
-                    },
-                    serverType : 'geoserver'
-                })
-            });
+		//Consts
+		var NEUTRALGREY = 0xC0C0C0, DEFAULTLAYER = 'extrapalettor:pop_bretagne_1999_2010';
+		//Globals
+		var papp
 
-            var map = new ol.Map({
-                layers : [ layer ],
-                target : 'map',
-                view : new ol.View({
-                    center : [ -350000, 6100777 ],
-                    zoom : 8.0
-                })
-            });
+		/*##########################################
+		 *           Entry point 
+		 *#########################################*/
+		window.onload = function() {
+			//Create the application
+			pApp = new PaletteApp("extrapalettor").show();
 
-        }
-		
-		sldBody = readTextFile("data/sld.xml");
-		//window.onload = loadmap();
-		
-		//Test : request palette
-		$.getJSON(
-				"http://localhost:8080/geoxygene-palettes/build/sequence?n=5",
-				function(jqXHR) {
-					p = new Palette(jqXHR);
-					gamut.loadPalette(p);
-					stylemap(p);
-				}).done(function() {
-			console.log("second success");
-		}).fail(
-				function(jqXHR, textStatus, errorThrown) {
-					console.log(jqXHR.responseText + "->" + textStatus + " : "
-							+ errorThrown + " error");
-				}).always(function() {
-			console.log("complete");
-		});
+			//Request a palette
+			$
+					.getJSON(
+							"http://localhost:8080/geoxygene-palettes/build/sequence?n=5",
+							function(jqXHR) {
+								pApp.addPalette(new Palette(jqXHR));
+							}).done(function() {
+						console.log("Done");
+					}).fail(
+							function(jqXHR, textStatus, errorThrown) {
+								console.log(jqXHR.responseText + "->"
+										+ textStatus + " : " + errorThrown
+										+ " error");
+							})
 
-		/* Resources loading */
-		var ptex = new THREE.TextureLoader().load('images/circle.png');
+		}
 
-		/****************************/
-		/*
-		 * INIT THE SCENE 
-		 */
-		bscene();
+		/*##########################################
+		 *           Application objects 
+		 *#########################################*/
 
-		/*
-		 *CREATES THE GAMUT OBJECT
-		 */
-		gamut = new Gamut();
-		scene.add(gamut.shape);
+		function PaletteApp(appName) {
 
-		/*
-		 *BUILDS THE INTERFACE
-		 */
-		binterface();
+			//-----PRIVATE-----
+			var name = appName, children = [];
 
-		/**
-		 * RENDER
-		 **/
-		animate();
+			//-----PUBLIC-----
+			this.container = null;
 
-		/****************************/
-
-		function Gamut() {
-			this.detail = 5;
-			this.name = 'sRGBGamut';
-			this.view = THREE.BackSide;
-			this.shape = null;
-			this.update_gamut = function(detail) {
-				var gamut_attributes = Gamut3D_sRGB_LAB(detail);
-				var geometry = new THREE.BufferGeometry();
-				geometry.addAttribute('position', new THREE.BufferAttribute(
-						gamut_attributes.position.array, 3));
-				geometry.addAttribute('color', new THREE.BufferAttribute(
-						gamut_attributes.color.array, 3));
-				geometry.computeBoundingBox();
-				geometry.computeBoundingSphere();
-				geometry.computeVertexNormals();
-				geometry.computeFaceNormals();
-				this.shape.geometry = geometry;
-			};
-			this.build_gamut = function(detail) {
-				this.shape = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1),
-						new THREE.MeshLambertMaterial({
-							color : 0xFFFFFF,
-							vertexColors : THREE.VertexColors,
-							transparent : true,
-							depthTest : false,
-							opacity : 1,
-							side : THREE.BackSide
-						}))
-				this.shape.name = name;
-				this.shape.material.needsUpdate = true;
-				this.update_gamut(detail);
+			this.add = function(child) {
+				child.attachTo(this);
+				children.push(child);
 			};
 
-			this.loadPalette = function(palette) {
+			this.addPalette = function(palette) {
+				children.forEach(function(child) {
+					child.addPalette(palette);
+				});
+			};
+
+			//-----PRIVILEGED-----
+			this.show = function() {
+				document.getElementsByTagName('body')[0]
+						.appendChild(this.container);
+				children.forEach(function(child) {
+					child.show();
+				});
+				return this;
+			};
+
+			//-----CONSTRUCTOR -----
+			//build a container for this app.
+			this.container = document.createElement('div');
+			this.container.id = name;
+			this.container.className = "application";
+
+			//The ColorSpace view is used to display a palette in the CIEL*a*b* color space.
+			this.add(new ColorSpaceView('sRGBView'));
+			this.add(new MapView('mapview'));
+
+		};
+
+		function ColorSpaceView(name) {
+
+			//-----PRIVATE-----
+			var parent, env, gamut, renderer, animate, ptex;
+
+			//-----PUBLIC-----
+			this.container = null;
+
+			//-----PRIVILEGED-----
+			this.attachTo = function(p) {
+				parent = p;
+			};
+
+			this.show = function() {
+				//Build a container for this view.
+				this.container = document.createElement('div');
+				this.container.id = name;
+				this.container.className = "ColorSpaceView";
+				parent.container.appendChild(this.container);
+
+				renderer = new THREE.WebGLRenderer({
+					antialias : true
+				});
+				// Set the background color of the scene to NEUTRALGREY to avoid distortions in color perception.
+				renderer.setClearColor(NEUTRALGREY, 1);
+				renderer.setSize(this.container.offsetWidth,
+						this.container.offsetHeight);
+				env = makeThreeEnvironment(this.container.offsetWidth,
+						this.container.offsetHeight, renderer);
+				gamut = new Gamut(5);
+
+				//Add the gamut to the scene
+				env.scene.add(gamut.shape);
+
+				animate = function() {
+					requestAnimationFrame(animate);
+					renderer.render(env.scene, env.camera);
+					env.controls.update();
+				};
+
+				//Add the parameter UI
+				var gui = new dat.GUI();
+				var gf = gui.addFolder('sRGB Gamut');
+				gf.open();
+				var lodController = gf.add(gamut, "detail", 1, 50);
+				lodController.step(1);
+				lodController.onChange(function(detail) {
+					gamut.updateShapeDetails(detail);
+				});
+
+				gf.add(gamut.shape.material, "opacity", 0, 1).onChange(
+						function(opacityValue) {
+							gamut.shape.material.opacity = opacityValue;
+						});
+
+				gf.add(gamut.shape.material, "wireframe", true, false)
+						.onChange(function(wireframeValue) {
+							gamut.shape.material.wireframe = wireframeValue;
+						});
+
+				gf.add(gamut, "view", [ 'Full', 'Interior' ]).onChange(
+						function(viewValue) {
+							if (viewValue == "Full") {
+
+								gamut.view = THREE.DoubleSide;
+								gamut.shape.material.side = THREE.DoubleSide;
+								gamut.shape.material.depthTest = true; //Re-enable the depth test to avoid weird rendering in DoubleSide mode.
+							}
+							if (viewValue == "Interior") {
+								gamut.view = THREE.BackSide;
+								gamut.shape.material.side = THREE.BackSide;
+								gamut.shape.material.depthTest = false;
+							}
+						});
+
+				//Show and render the scene
+				this.container.appendChild(renderer.domElement);
+				animate();
+
+				//Load the resources
+				ptex = new THREE.TextureLoader().load('images/circle.png');
+				return this;
+			};
+
+			this.addPalette = function(palette) {
 				palette.colors.forEach(function(c) {
 					var sprite = new THREE.Sprite(new THREE.SpriteMaterial({
 						map : ptex,
 						color : c.hex()
 					}));
-					console.log(sprite);
 					var clab = c.lab();
 					sprite.position.set(clab[0], clab[1], clab[2]);
-					sprite.scale.set(6, 6, 1.0); // imageWidth, imageHeight
-					scene.add(sprite);
+					sprite.scale.set(6, 6, 1.0);
+					env.scene.add(sprite);
 				});
-			}
-			//Init!
-			this.build_gamut(this.detail);
-		}
+			};
+
+		};
+
+		function MapView(name) {
+			//-----PRIVATE-----
+			var parent, sldBody, layer, map;
+
+			//-----PUBLIC-----
+			this.container = null;
+
+			//-----PRIVILEGED-----
+			this.attachTo = function(p) {
+				parent = p;
+			};
+			sldBody = readTextFile("data/sld.xml");
+			this.show = function() {
+				//Build a container for this view.
+				this.container = document.createElement('div');
+				this.container.id = name;
+				this.container.className = "MapView";
+				parent.container.appendChild(this.container);
+
+				map = new ol.Map({
+					layers : [],
+					target : name,
+					view : new ol.View({
+						center : [ -350000, 6100777 ],
+						zoom : 8.0
+					})
+				});
+				replaceLayer(DEFAULTLAYER);
+				return this;
+			};
+
+			this.addPalette = function(palette) {
+				palette.colors.forEach(function(c, id) {
+					sldBody = sldBody.replace("$color" + (id + 1) + "$", c
+							.hex());
+				});
+				replaceLayer(DEFAULTLAYER);
+			};
+
+			var replaceLayer = function(lname) {
+				map.removeLayer(layer);
+				layer = new ol.layer.Image({
+					source : new ol.source.ImageWMS({
+						url : 'http://5.39.77.233:8080/geoserver/wms',
+						params : {
+							layers : lname,
+							sld_body : sldBody,
+						},
+						serverType : 'geoserver'
+					})
+				});
+				map.addLayer(layer);
+
+			};
+		};
 
 		//A PALETTE OBJECT
 		function Palette(jsonObj) {
@@ -191,108 +286,49 @@ body, html {
 			this.colors = [];
 
 			for (i = 0; i < jsonObj.colors.length; i++) {
-				console.log(chroma(jsonObj.colors[i]));
 				this.colors[i] = chroma(jsonObj.colors[i]);
 			}
 
-		}
+		};
 
-		function stylemap(palette) {
-			palette.colors.forEach(function(c,id){
-				sldBody = sldBody.replace("$color"+(id+1)+"$",c.hex());
-			});
-			console.log(sldBody);
-			loadmap();
-		}
+		/*##########################################
+		 *           Global functions 
+		 *#########################################*/
 
-		// Sets up the scene
-		function bscene() {
+		/**
+		 * Builds a new ThreeJS Scene (with a Perspective Camera and a white Light)
+		 */
+		function makeThreeEnvironment(width, height, renderer) {
 
-			// Create the scene and set the scene size.
-			container = document.getElementById('ThreeJS');
-			scene = new THREE.Scene();
-
-			var SCREEN_WIDTH = container.clientWidth; //window.innerWidth
-			var SCREEN_HEIGHT = container.clientHeight;
-			var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 10000;
+			//-----PRIVATE-----
+			var scene = new THREE.Scene(), light, camera, controls, viewAngle = 45, aspect = width
+					/ height, near = 0.1, far = 10000;
 
 			// Create a camera, zoom it out from the model a bit, and add it to the scene.
-			camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-			scene.add(camera);
+			camera = new THREE.PerspectiveCamera(viewAngle, aspect, near, far);
 			camera.position.set(250, -200, 0);
 
-			// Create a renderer and add it to the DOM.
-			renderer = new THREE.WebGLRenderer({
-				antialias : true
-			});
-			renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-			container.appendChild(renderer.domElement);
-
-			// Camera control
+			// Camera controls
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
-			controls.target = new THREE.Vector3(50, 0, 0); //Look at the neutral grey (no specific illuimant here)
+			controls.target = new THREE.Vector3(50, 0, 0); //Look at the NEUTRALGREY color
 
 			//Debug axis
 			scene.add(new THREE.AxisHelper(30));
-			// Create an event listener that resizes the renderer with the browser window.
-			window.addEventListener('resize', function() {
-				var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
-				renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-				camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
-				camera.updateProjectionMatrix();
-			});
 
-			// Set the background color of the scene to neutral grey.
-			renderer.setClearColor(0xC0C0C0, 1);
+			// Default light
+			light = new THREE.AmbientLight(0xffffff);
 
-			// Create a light, set its position, and add it to the scene.
-			var light = new THREE.AmbientLight(0xffffff);
+			//Add everything in the scene
+			scene.add(camera);
 			scene.add(light);
 
-		}
-
-		function binterface() {
-			gui = new dat.GUI();
-			var gf = gui.addFolder('sRGB Gamut');
-			gf.open();
-			var lodController = gf.add(gamut, "detail", 1, 50);
-			lodController.step(1);
-			lodController.onChange(function(detailValue) {
-				gamut.update_gamut(detailValue)
-			});
-
-			gf.add(gamut.shape.material, "opacity", 0, 1).onChange(
-					function(opacityValue) {
-						gamut.shape.material.opacity = opacityValue;
-					});
-
-			gf.add(gamut.shape.material, "wireframe", true, false).onChange(
-					function(wireframeValue) {
-						gamut.shape.material.wireframe = wireframeValue;
-					});
-
-			gf.add(gamut, "view", [ 'Full', 'Interior' ]).onChange(
-					function(viewValue) {
-						if (viewValue == "Full") {
-
-							gamut.view = THREE.DoubleSide;
-							gamut.shape.material.side = THREE.DoubleSide;
-							gamut.shape.material.depthTest = true; //Re-enable the depth test to avoid weird rendering in DoubleSide mode.
-						}
-						if (viewValue == "Interior") {
-							gamut.view = THREE.BackSide;
-							gamut.shape.material.side = THREE.BackSide;
-							gamut.shape.material.depthTest = false;
-						}
-					});
-		}
-
-		function animate() {
-			requestAnimationFrame(animate);
-			renderer.render(scene, camera);
-			controls.update();
-		}
+			return {
+				scene : scene,
+				camera : camera,
+				light : light,
+				controls : controls
+			};
+		};
 
 		function readTextFile(file) {
 			var rawFile = new XMLHttpRequest(), allText;
@@ -306,7 +342,7 @@ body, html {
 			}
 			rawFile.send(null);
 			return allText;
-		}
+		};
 	</script>
 </body>
 </html>

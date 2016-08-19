@@ -1,6 +1,50 @@
 /**
- * @author HueyNemud / https://github.com/HueyNemud
+ * For now, only sRGB Gamut is available
  */
+function Gamut(mesh_detail) {
+	// PRIVATE
+	var geometry = new THREE.BufferGeometry(), gamut_attributes;
+
+	// PUBLIC
+	this.shape = null;
+	// parameters must be public
+	this.view = THREE.BackSide;
+	this.detail = mesh_detail;
+
+	this.updateShapeDetails = function(detail) {
+		var gamut_attributes = Gamut3D_sRGB_LAB(detail);
+		var geometry = new THREE.BufferGeometry();
+		geometry.addAttribute('position', new THREE.BufferAttribute(
+				gamut_attributes.position.array, 3));
+		geometry.addAttribute('color', new THREE.BufferAttribute(
+				gamut_attributes.color.array, 3));
+		geometry.computeBoundingBox();
+		geometry.computeBoundingSphere();
+		geometry.computeVertexNormals();
+		geometry.computeFaceNormals();
+		this.shape.geometry = geometry;
+	};
+	// -----CONSTRUCTOR -----
+	this.shape = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1),
+			new THREE.MeshLambertMaterial({
+				color : 0xFFFFFF,
+				vertexColors : THREE.VertexColors,
+				transparent : true,
+				depthTest : false,
+				opacity : 1,
+				side : THREE.BackSide
+			}))
+	this.shape.name = name;
+	this.shape.material.needsUpdate = true;
+	this.updateShapeDetails(this.detail);
+	/*
+	 * this.loadPalette = function(palette) { palette.colors.forEach(function(c) {
+	 * var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map : ptex,
+	 * color : c.hex() })); console.log(sprite); var clab = c.lab();
+	 * sprite.position.set(clab[0], clab[1], clab[2]); sprite.scale.set(6, 6,
+	 * 1.0); // imageWidth, imageHeight scene.add(sprite); }); };
+	 */
+};
 
 function Gamut3D_sRGB_LAB(alpha) {
 
