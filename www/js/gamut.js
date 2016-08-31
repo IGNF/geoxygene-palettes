@@ -1,7 +1,7 @@
 /**
  * For now, only sRGB Gamut is available
  */
-function Gamut(mesh_detail) {
+function Gamut(mesh_detail, colorspace='lab') {
 	// PRIVATE
 	var geometry = new THREE.BufferGeometry(), gamut_attributes;
 
@@ -12,7 +12,7 @@ function Gamut(mesh_detail) {
 	this.detail = mesh_detail;
 
 	this.updateShapeDetails = function(detail) {
-		var gamut_attributes = Gamut3D_sRGB_LAB(detail);
+		var gamut_attributes = Gamut3D_sRGB(detail,colorspace);
 		var geometry = new THREE.BufferGeometry();
 		geometry.addAttribute('position', new THREE.BufferAttribute(
 				gamut_attributes.position.array, 3));
@@ -46,10 +46,9 @@ function Gamut(mesh_detail) {
 	 */
 };
 
-function Gamut3D_sRGB_LAB(alpha) {
+function Gamut3D_sRGB(alpha, colorspace) {
 
-	const
-	rgbcube = {
+	var rgbcube = {
 		black : [ 0, 0, 0 ],
 		white : [ 255, 255, 255 ],
 		red : [ 255, 0, 0 ],
@@ -60,9 +59,25 @@ function Gamut3D_sRGB_LAB(alpha) {
 		yellow : [ 255, 255, 0 ]
 	};
 
-	const
-	DIMENSION = 3, DEF_SCALE = 1.0;
+	var DIMENSION = 3, DEF_SCALE = 1.0;
 
+	// Converts from degrees to radians.
+	var toRadians = function(degrees) {
+	  return degrees * Math.PI / 180;
+	};
+	
+	var toCsDest = function(r, g, b,cs) {
+		switch (cs.toLowerCase()) {
+		case 'rgb':
+			return chroma(r, g, b).rgb();
+		default :
+			return chroma(r, g, b).lab();
+		};
+	};
+	
+	
+
+	
 	var triangles = alpha * alpha * 6 * 2;
 
 	var attributes = {
@@ -140,10 +155,10 @@ function Gamut3D_sRGB_LAB(alpha) {
 		br = bl + DIMENSION;
 
 		// Convert the quad to CIE Lab
-		tl_lab = chroma(quads[tl], quads[tl + 1], quads[tl + 2]).lab();
-		tr_lab = chroma(quads[tr], quads[tr + 1], quads[tr + 2]).lab();
-		bl_lab = chroma(quads[bl], quads[bl + 1], quads[bl + 2]).lab();
-		br_lab = chroma(quads[br], quads[br + 1], quads[br + 2]).lab();
+		tl_lab = toCsDest(quads[tl], quads[tl + 1], quads[tl + 2],colorspace);
+		tr_lab = toCsDest(quads[tr], quads[tr + 1], quads[tr + 2],colorspace);
+		bl_lab = toCsDest(quads[bl], quads[bl + 1], quads[bl + 2],colorspace);
+		br_lab = toCsDest(quads[br], quads[br + 1], quads[br + 2],colorspace);
 		var color = attributes.color.array;
 		var position = attributes.position.array;
 
@@ -194,3 +209,5 @@ function Gamut3D_sRGB_LAB(alpha) {
 	}
 	return attributes;
 }
+
+

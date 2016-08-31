@@ -56,12 +56,222 @@ body, html {
 		//Globals
 		var papp
 
+		//TEMP
+		var blues_from_serwin_williams = [ '#019D6E', '#019187', '#019196',
+				'#017680', '#01B0BB', '#0192C6', '#015F97', '#C0E3DA',
+				'#A1D4C8', '#89C6B7', '#70BAA7', '#53A38F', '#368976',
+				'#016C4F', '#C1E6DF', '#A1D5CB', '#8AC5BA', '#75B9AE',
+				'#61A89D', '#3B8C80', '#016D60', '#C2E5E5', '#A7DCDC',
+				'#92D0D0', '#6EC2C4', '#3AA9AE', '#01858B', '#017478',
+				'#C2E0E3', '#A6D0D6', '#97CBD2', '#7DC1CB', '#4DA6B2',
+				'#08808E', '#01717E', '#C6E3E8', '#A6D4DE', '#8BC4D1',
+				'#71B8C7', '#34A3B6', '#018498', '#016E85', '#B4E0E7',
+				'#8FD0DD', '#73C0D2', '#56B5CA', '#01A0B8', '#01819E',
+				'#016081', '#B7DFE8', '#A2D5E7', '#89C6DF', '#5DB3D4',
+				'#289EC4', '#017CA7', '#015D87', '#BFD2C9', '#A8C1B7',
+				'#94B2A6', '#7EA298', '#5F887D', '#476F65', '#124A42',
+				'#C3D7D3', '#B4CCC9', '#A3C0BD', '#8CAEAB', '#518682',
+				'#2E6864', '#01554F', '#BEDBD8', '#9EC6C6', '#90BDBD',
+				'#7BB1B2', '#5C9598', '#3C797D', '#016367', '#C7DFE0',
+				'#B0D2D6', '#9FC5CC', '#84B4BE', '#5B96A2', '#217786',
+				'#015A6B', '#C7D8DB', '#AFC7CD', '#9FBBC3', '#88ABB4',
+				'#68909D', '#427584', '#175A6C', '#C5DCE0', '#ADCCD3',
+				'#9BBFC9', '#83AFBC', '#5B92A2', '#2F778B', '#015D75',
+				'#C2DAE0', '#A9C9D7', '#85B0C4', '#6F9DB3', '#5389A1',
+				'#22657F', '#01455E', '#C2CFCF', '#ABBEBF', '#9BAFB2',
+				'#8B9FA0', '#7A9192', '#5D7274', '#4A5D5F', '#BCCBCE',
+				'#A4B7BD', '#96AAB0', '#80969D', '#607D84', '#47626A',
+				'#244653', '#CBD4D4', '#B6C3C4', '#A6B2B5', '#90A0A6',
+				'#6F848C', '#536872', '#204652', '#CDD2D2', '#B8BEBE',
+				'#A9B0B1', '#91999C', '#727C7F', '#596368', '#23383F',
+				'#C9D9E0', '#B7C9D1', '#9EB4C0', '#8AA3B1', '#708D9E',
+				'#4E7287', '#32586E', '#BFC9D0', '#AABAC6', '#98A9B7',
+				'#899CAA', '#768B9A', '#5D6F7F', '#3E5063', '#CAD0D2',
+				'#B8C0C3', '#ADB5B9', '#979FA5', '#7A848D', '#606B75',
+				'#586168' ];
+		var blues_from_findthedata = [ '#0077BE', '#E7FEFF', '#1C39BB',
+				'#A2ADD0', '#4682B4', '#4c66a4', '#9BDDFF', '#6495ED',
+				'#4997D0', '#007BBB', '#006994', '#00009C', '#1560BD',
+				'#0087BD', '#1C1CF0', '#87CEFA', '#007AA5', '#062A78',
+				'#1034A6', '#89CFF0', '#8CBED6', '#536895', '#00CCFF',
+				'#0070B8', '#A3C1AD', '#0073CF', '#1974D2', '#56A0D3',
+				'#5D89BA', '#126180', '#002FA7', '#00AAE4', '#003399',
+				'#483D8B', '#007FFF', '#A4DDED', '#CCCCFF', '#9ACEEB',
+				'#4166F5', '#0247FE', '#80DAEB', '#3369E8', '#000F89',
+				'#0093AF', '#002147', '#0014A8', '#1E90FF', '#6CA0DC',
+				'#2E5894', '#C9FFE5', '#6F00FF', '#73A9C2', '#0F52BA',
+				'#0095B6', '#436B95', '#7B68EE', '#002395', '#003153',
+				'#007BA7', '#000080', '#21ABCD', '#035096', '#00008B',
+				'#ACE5EE', '#5B92E5', '#5A4FCF', '#0067A5', '#A1CAF1',
+				'#324AB2', '#1C2841', '#0892D0', '#273BE2', '#0000FF',
+				'#0033AA', '#00B7EB', '#417DC1', '#45B1E8', '#93CCEA',
+				'#1DACD6', '#0018A8', '#146EB4', '#002366', '#0070FF',
+				'#7C9ED9', '#5F9EA0', '#F0FFFF', '#007BB8', '#0072BB',
+				'#6082B6', '#99BADD', '#1F75FE', '#23297A', '#318CE7',
+				'#4F86F7', '#00009E', '#002387', '#191970', '#536878',
+				'#6050DC', '#8AB9F1', '#0077BE', '#E7FEFF', '#1C39BB',
+				'#A2ADD0', '#4682B4', '#4c66a4', '#9BDDFF', '#6495ED',
+				'#4997D0', '#007BBB', '#006994', '#00009C', '#1560BD',
+				'#0087BD', '#1C1CF0', '#87CEFA', '#007AA5', '#062A78',
+				'#1034A6', '#89CFF0', '#8CBED6', '#536895', '#00CCFF',
+				'#0070B8', '#A3C1AD', '#0073CF', '#1974D2', '#56A0D3',
+				'#5D89BA', '#126180', '#002FA7', '#00AAE4', '#003399',
+				'#483D8B', '#007FFF', '#A4DDED', '#CCCCFF', '#9ACEEB',
+				'#4166F5', '#0247FE', '#80DAEB', '#3369E8', '#000F89',
+				'#0093AF', '#002147', '#0014A8', '#1E90FF', '#6CA0DC',
+				'#2E5894', '#C9FFE5', '#6F00FF', '#73A9C2', '#0F52BA',
+				'#0095B6', '#436B95', '#7B68EE', '#002395', '#003153',
+				'#007BA7', '#000080', '#21ABCD', '#035096', '#00008B',
+				'#ACE5EE', '#5B92E5', '#5A4FCF', '#0067A5', '#A1CAF1',
+				'#324AB2', '#1C2841', '#0892D0', '#273BE2', '#0000FF',
+				'#0033AA', '#00B7EB', '#417DC1', '#45B1E8', '#93CCEA',
+				'#1DACD6', '#0018A8', '#146EB4', '#002366', '#0070FF',
+				'#7C9ED9', '#5F9EA0', '#F0FFFF', '#007BB8', '#0072BB',
+				'#6082B6', '#99BADD', '#1F75FE', '#23297A', '#318CE7',
+				'#4F86F7', '#00009E', '#002387', '#191970', '#536878',
+				'#6050DC', '#8AB9F1' ];
+		var yellows_from_serwin_williams = [ '#F8AC1D', '#FDB702', '#FDCC4E',
+				'#FFC801', '#FED95D', '#FED340', '#FECB01', '#F5D6A9',
+				'#F6CD8E', '#F4BF77', '#EEB76B', '#EBAD5E', '#DF9938',
+				'#D88F32', '#F5DEAF', '#F7D391', '#FBD187', '#FBCB78',
+				'#F7BE5B', '#F2AF46', '#E39A33', '#FBE4B3', '#FDDFA0',
+				'#FEDF94', '#FBD682', '#FBD073', '#F4C454', '#FFC723',
+				'#F5E0B1', '#F6DDA3', '#F6D58F', '#F6C973', '#F1BA55',
+				'#EAAE47', '#D69835', '#F4E1AE', '#F5D68F', '#F1CD7B',
+				'#EEC25F', '#E1B047', '#D6A02B', '#C48919', '#F5E1AC',
+				'#F7D78A', '#EAC365', '#DBB04A', '#D1A436', '#C49832',
+				'#8F6C3E', '#F2EAC3', '#F4E8B2', '#F6E3A1', '#F7E594',
+				'#EDD26F', '#DDB835', '#CBA901', '#EFDDC1', '#E8C89E',
+				'#E1BD8E', '#D6AD78', '#CC9B5C', '#C09056', '#A4763C',
+				'#E4CEAC', '#DCBD92', '#D2B084', '#CBA576', '#C19763',
+				'#AD8451', '#906A3A', '#DBC7A8', '#CDB592', '#C5AA85',
+				'#BA9C75', '#B39167', '#9C7A56', '#8A6645', '#E9D6B0',
+				'#E1C28D', '#D5B176', '#C99E53', '#BC934D', '#AA803A',
+				'#996F32', '#E4D0A5', '#DCC797', '#D2BA83', '#C2A462',
+				'#B89B59', '#9C7F41', '#95793D', '#DDCDA6', '#CBB584',
+				'#BEA775', '#B1975F', '#9D8344', '#8E773F', '#7A6841',
+				'#DFD4B0', '#CFC291', '#C4B47D', '#BBA86A', '#9C9152',
+				'#8D844D', '#655F2D', '#DFD3C3', '#CFBEA9', '#C0AD96',
+				'#AF987F', '#A08568', '#8F7659', '#695239', '#DACAB2',
+				'#CCB79B', '#C0A98B', '#AB9579', '#947F65', '#867057',
+				'#6E543C', '#D9CFBA', '#C8BBA3', '#B8A992', '#A4947E',
+				'#8E7F6A', '#786957', '#66543E', '#E0CFB0', '#D0BA94',
+				'#C6B08A', '#B9A47E', '#AC9571', '#9A815E', '#7F6743',
+				'#DDD0B6', '#CDBB9C', '#C3B090', '#B19F80', '#9F8E71',
+				'#877459', '#665439', '#DBD0B9', '#CDBDA2', '#C1AE91',
+				'#AC9D83', '#998970', '#7E6F59', '#5D513E', '#D1CDBF',
+				'#BFB9AA', '#B0AB9C', '#9D9887', '#8B8372', '#726B5B',
+				'#5A5243' ];
+		var yellows_from_findthedata = [ '#B8860B', '#FFEF00', '#ADFF2F',
+				'#F8DE7E', '#EFCC00', '#CAE00D', '#FFCC33', '#E3A857',
+				'#D4AF37', '#FFAE42', '#FEFE22', '#737000', '#FFFFED',
+				'#FFF44F', '#E9D66B', '#FCE883', '#FFFFE0', '#FFD300',
+				'#FADA5E', '#FFF700', '#FFE135', '#E3FF00', '#FFDF00',
+				'#DAA520', '#FFF000', '#FFFF99', '#FDFF00', '#FEDF00',
+				'#FFFF33', '#EEE600', '#FDEE00', '#FEFE33', '#F4CA16',
+				'#F8D568', '#FFF600', '#FFBA00', '#FDFD96', '#808000',
+				'#FAE7B5', '#F4C430', '#FFFF00', '#FFD800', '#EED202',
+				'#CCFF00', '#FFC40C', '#EEB211', '#9B870C', '#FFCC00',
+				'#FFFF66' ];
+		var greens_from_serwin_williams = [ '#C6B836', '#B2C216', '#9ABA25',
+				'#3F8A24', '#358C3F', '#238652', '#017244', '#EEE3B2',
+				'#E6D88E', '#D9C661', '#CEBC55', '#C4B146', '#AC9825',
+				'#9C8B1F', '#E9E5B3', '#DAD790', '#D2D083', '#C4C476',
+				'#B4B05A', '#989746', '#847E35', '#DCE1B8', '#C5CD8F',
+				'#AFB96A', '#9FAC5C', '#97A554', '#7A8833', '#6C7B30',
+				'#D7E3CA', '#C0D2AD', '#ABCA99', '#99C285', '#7FAC6E',
+				'#4F854A', '#2F5F3A', '#D3DFC3', '#BDD0AB', '#A9C095',
+				'#9DB682', '#85A16A', '#648149', '#58713F', '#CCE2CA',
+				'#AED2B0', '#8EC298', '#78B185', '#68A678', '#498555',
+				'#245E36', '#D1E3D2', '#B7D7BF', '#9FCDB1', '#8AC1A1',
+				'#57AA80', '#348A5D', '#016844', '#E0DDBD', '#CBC99D',
+				'#BBB98A', '#AEAC7A', '#95945C', '#71713E', '#5F6033',
+				'#DBDDBD', '#C7CDA8', '#ABB486', '#9BA373', '#88915D',
+				'#6D7645', '#576238', '#DAE2CD', '#C5D1B2', '#A3B48C',
+				'#8FA277', '#788D60', '#60724F', '#475842', '#CFDDC7',
+				'#B3CBAA', '#8BA97F', '#75946B', '#5E7F57', '#42603C',
+				'#405840', '#C8D8C4', '#ACC2A8', '#98B092', '#8EA486',
+				'#6C8867', '#537150', '#205134', '#C6D5C9', '#AAC2B3',
+				'#91AF9D', '#7D9B89', '#61826C', '#4F6A56', '#3D5541',
+				'#C4D9CE', '#ACCABC', '#94B5A6', '#81A595', '#6B927F',
+				'#547867', '#2A4F43', '#D1CCB9', '#C1BCA7', '#B2AC96',
+				'#9E9985', '#898473', '#6B6757', '#5E5949', '#CECEBD',
+				'#BBBCA7', '#ACAD97', '#989A82', '#7F8266', '#65684C',
+				'#4F523A', '#D1D3C7', '#BDC0B3', '#9FA694', '#909886',
+				'#7A8775', '#626E60', '#465448', '#D1D0C6', '#BEBFB2',
+				'#ABAC9F', '#95978A', '#7B8070', '#64695C', '#4E5147',
+				'#C9C9C0', '#B6B5AB', '#A6A69B', '#949488', '#7F7E72',
+				'#6D6C62', '#64645A', '#CDD2CA', '#BEC3BB', '#AEB3A9',
+				'#969C92', '#7A8076', '#5E6259', '#44483D', '#C2CDC5',
+				'#ADBBB2', '#9BAAA2', '#8D9E97', '#7C8E87', '#5E706A',
+				'#343B36' ];
+		var greens_from_findthedata = [ '#90EE90', '#1D6660', '#556B2F',
+				'#39FF14', '#355E3B', '#B0BF1A', '#78866B', '#00FA9A',
+				'#009000', '#9ECE08', '#087830', '#354230', '#4CBB17',
+				'#4A5D23', '#3AB09E', '#98FF98', '#00a478', '#009150',
+				'#4F7942', '#A9BA9D', '#A0D6B4', '#49796B', '#007F5C',
+				'#414833', '#007F66', '#7BB661', '#D0F0C0', '#228B22',
+				'#3CD070', '#BFFF00', '#00563F', '#BAB86C', '#004225',
+				'#232B2B', '#1C352D', '#3DF500', '#3EB489', '#0D98BA',
+				'#00FF7F', '#3FFF00', '#8A9A5B', '#00693E', '#8FD400',
+				'#2E8B57', '#177245', '#1B4D3E', '#00A693', '#7CFC00',
+				'#507D2A', '#004953', '#00A877', '#18453B', '#76FF7A',
+				'#A4C639', '#77DD77', '#8F9779', '#29AB87', '#87A96B',
+				'#DFFF00', '#32CD32', '#006400', '#00AD43', '#059033',
+				'#006A4E', '#8FBC8F', '#009F6B', '#00827F', '#20B2AA',
+				'#123524', '#96C8A2', '#444C38', '#2F847C', '#00703C',
+				'#00FF00', '#006600', '#8DB600', '#45CEA2', '#013220',
+				'#74C365', '#195905', '#138808', '#014421', '#008080',
+				'#03C03C', '#01796F', '#71BC78', '#1A2421', '#9ACD32',
+				'#4B5320', '#ADDFAD', '#6B8E23', '#00AB66', '#4C9141',
+				'#679267', '#1E4D2B', '#306030', '#98FB98', '#A7FC00',
+				'#9EFD38', '#3B7A57', '#2A8000', '#93C572', '#7FFF00',
+				'#008000', '#00CC99', '#00A550', '#568203', '#009925',
+				'#009E60', '#66B032', '#3CB371', '#B2EC5D', '#A8E4A0',
+				'#1CAC78', '#006B3C', '#66FF00', '#004B49' ]
+		var historic = [ '#94766C', '#BEAC9F', '#C59F91', '#996C6E', '#6D595A',
+				'#8B534E', '#AC7559', '#8D422F', '#C28E61', '#C19E80',
+				'#CBB99B', '#C19F6E', '#AEB08F', '#8F8666', '#708672',
+				'#45584D', '#8CA49C', '#627F7B', '#A0BBB8', '#739694',
+				'#C0B6B4', '#7E696A', '#A39B90', '#988977', '#CC8D84',
+				'#E8B9AE', '#ECCEB9', '#ECD0B1', '#CDCDB4', '#EFC488',
+				'#9AABAB', '#546670', '#974F49', '#C08F80', '#EEDAC3',
+				'#D9C3A6', '#ADA193', '#7F7263', '#C4957A', '#A76251',
+				'#3A4A3F', '#ACA17D', '#AE905E', '#E9BF8C', '#946644',
+				'#F3E5D1', '#6D817B', '#47626F', '#B8B2A2', '#F0EADC',
+				'#F2E0C3', '#CBCEC5', '#E9E0D5', '#C8BFB5', '#C2C0BB',
+				'#D6BCAA', '#9E3E33', '#F1BFB1', '#CBD0C2', '#598C74',
+				'#AB7878', '#C6B9B8', '#ABD1C9', '#014E4C', '#4B5645',
+				'#ACB19F', '#F0CDA0', '#C2CCC4', '#CD9C85', '#DEC3B9',
+				'#BC9C9E', '#623F45', '#E1D286', '#A489A0', '#8AC6BD',
+				'#DAB5B4', '#888782', '#F0D39D', '#C9AA98', '#CD717B',
+				'#4B2929', '#622F2D', '#975840', '#AF8871', '#C3B09D',
+				'#7F614A', '#6E5241', '#5F4D43', '#303B39', '#506A67',
+				'#738478', '#979F7F', '#CAAB7D', '#A58258', '#97896A',
+				'#565C4A', '#C08650', '#8B7D7B', '#777F86', '#887B67',
+				'#A6A397', '#CBBCA5', '#9A7E64', '#96724C', '#A39B7E',
+				'#A7947C', '#D3B699', '#ECE1CB', '#EBB875', '#B4B9B9',
+				'#E8D9BD', '#E4C495', '#AE9278', '#85695B', '#6A4238',
+				'#432722', '#7B3728', '#978A7F', '#937F68', '#A79473',
+				'#7A6A51', '#C2BDB1', '#988F7B', '#575449', '#324038',
+				'#616564', '#797978', '#B6B7B0', '#73705E', '#D9AD7F',
+				'#BE795E', '#9C8A79', '#61463A', '#EECF9E', '#D9A06A',
+				'#DFC8B5', '#B3AE95', '#857C5D', '#89A4AD', '#F8D492' ];
 		/*##########################################
 		 *           Entry point 
 		 *#########################################*/
 		window.onload = function() {
 			//Create the application
 			pApp = new PaletteApp("extrapalettor").show();
+			//pApp.children['sRGBView'].addColorFamily(blues_from_serwin_williams);
+			pApp.children['sRGBView'].addColorFamily(blues_from_findthedata,
+					'blues');
+			//pApp.children['sRGBView'].addColorFamily(greens_from_serwin_williams);
+			pApp.children['sRGBView'].addColorFamily(greens_from_findthedata,
+					'greens');
+			//pApp.children['sRGBView'].addColorFamily(yellows_from_serwin_williams);
+			pApp.children['sRGBView'].addColorFamily(yellows_from_findthedata,
+					'yellows');
 
 			//Request a palette
 			$
@@ -87,29 +297,33 @@ body, html {
 		function PaletteApp(appName) {
 
 			//-----PRIVATE-----
-			var name = appName, children = [];
+			var name = appName
 
 			//-----PUBLIC-----
 			this.container = null;
+			this.children = {};
 
 			this.add = function(child) {
 				child.attachTo(this);
-				children.push(child);
+				this.children[child.name] = child;
 			};
 
 			this.addPalette = function(palette) {
-				children.forEach(function(child) {
-					child.addPalette(palette);
-				});
+				for ( var child in this.children) {
+					this.children[child].addPalette(palette);
+				}
+				;
 			};
 
 			//-----PRIVILEGED-----
 			this.show = function() {
 				document.getElementsByTagName('body')[0]
 						.appendChild(this.container);
-				children.forEach(function(child) {
-					child.show();
-				});
+				for ( var child in this.children) {
+					console.log(this.children[child])
+					this.children[child].show();
+				}
+				;
 				return this;
 			};
 
@@ -125,13 +339,14 @@ body, html {
 
 		};
 
-		function ColorSpaceView(name) {
+		function ColorSpaceView(n) {
 
 			//-----PRIVATE-----
 			var parent, env, gamut, renderer, animate, ptex;
 
 			//-----PUBLIC-----
 			this.container = null;
+			this.name = n;
 
 			//-----PRIVILEGED-----
 			this.attachTo = function(p) {
@@ -141,7 +356,7 @@ body, html {
 			this.show = function() {
 				//Build a container for this view.
 				this.container = document.createElement('div');
-				this.container.id = name;
+				this.container.id = this.name;
 				this.container.className = "ColorSpaceView";
 				parent.container.appendChild(this.container);
 
@@ -154,7 +369,7 @@ body, html {
 						this.container.offsetHeight);
 				env = makeThreeEnvironment(this.container.offsetWidth,
 						this.container.offsetHeight, renderer);
-				gamut = new Gamut(5);
+				gamut = new Gamut(5, 'rgb');
 
 				//Add the gamut to the scene
 				env.scene.add(gamut.shape);
@@ -206,6 +421,13 @@ body, html {
 
 				//Load the resources
 				ptex = new THREE.TextureLoader().load('images/circle.png');
+				ptex_blues = new THREE.TextureLoader()
+						.load('images/circle.png');
+				ptex_greens = new THREE.TextureLoader()
+						.load('images/losange.png');
+				ptex_yellows = new THREE.TextureLoader()
+						.load('images/star.png');
+
 				return this;
 			};
 
@@ -218,18 +440,45 @@ body, html {
 					var clab = c.lab();
 					sprite.position.set(clab[0], clab[1], clab[2]);
 					sprite.scale.set(6, 6, 1.0);
+					//env.scene.add(sprite);
+				});
+			};
+
+			this.addColorFamily = function(hexArray, colname) {
+				hexArray.forEach(function(color) {
+					var c = chroma(color);
+					var tex = null;
+					switch (colname) {
+					case 'greens':
+						tex = ptex_greens;
+						break;
+					case 'yellows':
+						tex = ptex_yellows;
+						break;
+					case 'blues':
+						tex = ptex_blues;
+						break;
+					}
+					var sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+						map : tex,
+						color : c.hex()
+					}));
+					var clab = c.rgb();
+					sprite.position.set(clab[0], clab[1], clab[2]);
+					sprite.scale.set(6, 6, 1.0);
 					env.scene.add(sprite);
 				});
 			};
 
 		};
 
-		function MapView(name) {
+		function MapView(n) {
 			//-----PRIVATE-----
 			var parent, sldBody, layer, map;
 
 			//-----PUBLIC-----
 			this.container = null;
+			this.name = n
 
 			//-----PRIVILEGED-----
 			this.attachTo = function(p) {
@@ -239,7 +488,7 @@ body, html {
 			this.show = function() {
 				//Build a container for this view.
 				this.container = document.createElement('div');
-				this.container.id = name;
+				this.container.id = this.name;
 				this.container.className = "MapView";
 				parent.container.appendChild(this.container);
 
